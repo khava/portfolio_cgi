@@ -1,0 +1,17 @@
+{% extends '../base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <p class="h2 mt-3 mb-5 font-weight-light text-center">Добавить новую тему для обсуждения</p>
+    <form class="mb-3" method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <textarea class="form-control" name="topic" cols="40" rows="10" required="" id="id_topic"></textarea>
+        </div>
+        <button class="btn btn-primary btn-lg btn-block " type="submit">Добавить тему</button>
+    </form>
+</div>
+
+{% endblock %}

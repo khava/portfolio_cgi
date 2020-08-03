@@ -1,0 +1,109 @@
+{% extends "../base.html" %}
+
+{% block content %}
+
+<section class="container">
+
+  <div class="row">
+    <div class="col-8 col-lg-4 offset-2 offset-lg-4">
+      <form class="form-signin pt-3" action="" method='POST'>
+
+        {% csrf_token %}
+
+        <div class="text-center mt-5 b-1">
+          <p class="h4 mb-5 font-weight-light">Создайте аккаунт</p>
+        </div>
+
+        
+        <div class="form-label-group">
+          <label class="text-muted" for="id_username">Имя пользователя</label>
+          <input class="form-control mb-3" type="text" name="username" maxlength="30" autofocus="" required="" id="id_username">
+          {% for error in form.username.errors %}
+            <div class="alert alert-danger" role="alert">
+              {{ error }}
+            </div>
+          {% endfor %}
+        </div>
+        
+        <div class="form-label-group">
+          <label class="text-muted" for="id_email">Email</label>
+          <input class="form-control mb-3" type="email" name="email" maxlength="200" required="" id="id_email">
+          {% for error in form.email.errors %}
+            <div class="alert alert-danger" role="alert">
+              {{ error }}
+            </div>
+          {% endfor %}
+        </div>
+        
+        <div class="form-label-group">
+          <label class="text-muted" for="id_password1">Пароль</label>
+          <input class="form-control mb-3" type="password" name="password1" required="" id="id_password1">
+          {% for error in form.password1.errors %}
+            <div class="alert alert-danger" role="alert">
+              {{ error }}
+            </div>
+          {% endfor %}
+        </div>
+        
+        <div class="form-label-group">
+          <label class="text-muted" for="id_password2">Подтверждение пароля</label>
+          <input class="form-control mb-3" type="password" name="password2" required="" id="id_password2">
+          {% for error in form.password2.errors %}
+            <div class="alert alert-danger" role="alert">
+              {{ error }}
+            </div>
+          {% endfor %}
+        </div>
+        
+        <div class="checkbox mb-3"></div>
+        <button class="btn btn-primary btn-lg btn-block" type="submit">Зарегистрироваться</button>
+      </form>
+      <div class="mt-4 text-center"><p>Есть аккаунт? <a href="{% url 'login' %}">Войдите!</a></p></div>
+    </div>
+  </div>
+
+  <!-- {% load crispy_forms_tags %}
+
+  <section class="container">
+
+  <div class="row">
+    <div class="col-8 col-lg-4 offset-2 offset-lg-4">
+      <form class="form-signin pt-5" action="" method='POST'>
+
+        {% csrf_token %}
+
+        <div class="text-center mt-5 b-1">
+          <p class="h4 mb-5 font-weight-light">Создайте аккаунт</p>
+        </div>
+
+        {{ form|crispy }}
+        
+        <div class="checkbox mb-3"></div>
+        <button class="btn btn-primary btn-lg btn-block" type="submit">Зарегистрироваться</button>
+      </form>
+      <div class="mt-4 text-center"><p>Есть аккаунт? <a href="{% url 'login' %}">Войдите!</a></p></div>
+    </div>
+  </div>  -->
+
+  <!-- <h2>Создайте аккаунт</h2>
+  <form method="post">
+    {% csrf_token %}
+      {% for field in form %}
+      <p>
+        {{ field.label_tag }}<br>
+        {{ field }}
+        {% if field.help_text %}
+          <small style="display: none">{{ field.help_text }}</small>
+        {% endif %}
+        {% for error in field.errors %}
+          <p style="color: red">{{ error }}</p>
+        {% endfor %}
+      </p>
+      {% endfor %}
+    <button type="submit">Зарегистрироваться</button>
+  </form>
+  <p> Есть аккаунт? <a href="{% url 'login' %}">Авторизируйтесь</a></p> -->
+
+
+</section>
+{% endblock %}

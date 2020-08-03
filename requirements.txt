@@ -1,0 +1,4 @@
+Django==2.2.5
+pytz==2020.1
+six==1.13.0
+sqlparse==0.3.1
