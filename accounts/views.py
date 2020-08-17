@@ -8,9 +8,9 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.contrib.auth.models import Group, Permission
 
-from users.tokens import account_activation_token
-from users.models import User
-from users.forms import SignupForm
+from accounts.tokens import account_activation_token
+from accounts.models import User
+from accounts.forms import SignupForm
 
 def signup(request):
     if request.method == 'POST':

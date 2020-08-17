@@ -36,5 +36,14 @@ class CreateTopicView(CreateView):
 
 class DiscussionView(View):
 
-    def get(self, request):
-        return render(request, 'discussion/discussion_page.html')
+    def get(self, request, room_name):
+        
+        topic = Topic.objects.filter(pk=room_name).first()
+        comments = Comment.objects.filter(topic=topic)
+
+        context = {
+            'topic': topic,
+            'comments': comments
+        }
+
+        return render(request, 'discussion/discussion_room.html', context)

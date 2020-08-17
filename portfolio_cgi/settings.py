@@ -37,8 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     
-    'users',
+    'accounts',
     'discussion',
 ]
 
@@ -56,7 +57,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'portfolio_cgi.urls'
 
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = 'accounts.User'
 
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 
@@ -78,6 +79,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'portfolio_cgi.wsgi.application'
 
+# channels settings
+
+ASGI_APPLICATION = 'portfolio_cgi.routing.application'
+
+# CHANNEL_LAYERS = {
+#     'default': {
+#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+#         'CONFIG': {
+#             "hosts": [('127.0.0.1', 6379)],
+#         },
+#     },
+# }
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases

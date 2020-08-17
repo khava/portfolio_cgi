@@ -1,4 +1,4 @@
-{% extends '../base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 
@@ -6,7 +6,7 @@
     <p class="h2 mt-3 mb-5 font-weight-light text-center">Список тем</p>
     <ul class="list-group mb-3">
         {% for topic in topics %}
-            <a style="text-decoration: none" href="">
+            <a style="text-decoration: none" href="{% url 'discussion' room_name=topic.pk %}">
                 <li class="list-group-item mb-1">
                     {{ topic.topic }} - {{ topic.created_date }}
                 </li> 

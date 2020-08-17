@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+{% block content %}    
+
+<div class="container">
+    <div class="row">
+        <div class="card mt-5">
+            <div class="card-header">
+                Тема - {{ topic.topic }}
+            </div>
+
+            <div class="card-body" id="all_messages">
+                <ul class="chat">
+                    {% if user.is_authenticated %}
+                        {% for comment in comments %}
+                            {% if comment.author == user %}
+                            <li>
+                                <div class="chat-body">
+                                    <p class="text-right"><strong>{{ comment.author }}</strong></p>
+                                    <!-- <small class="text-muted">{{ comment.created_date }}</small> -->
+                                    <p class="text-right">{{ comment.comment }}</p>
+                                </div>
+                            </li>
+                            {% else %}
+                            <li>
+                                <div class="chat-body">
+                                    <p class="text-left"><strong>{{ comment.author }}</strong></p>
+                                    <!-- <small class="text-muted">{{ comment.created_date }}</small> -->
+                                    <p class="text-left">{{ comment.comment }}</p>
+                                </div>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                    {% else %}
+                        <div>Please Login</div>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="card-footer">
+                <div class="input-group">
+                    <input id="chat-message-input" type="text" class="form-control input-sm" placeholder=""/>
+                    <span class="input-group-btn">
+                        <button class="btn btn-dark btn-md" id="chat-message-submit">Отправить</button>
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{{ topic.pk|json_script:"room-name" }}
+<script>
+
+    $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
+    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+    const ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+    const websocket_path= ws_scheme + '://' + window.location.host + '/ws/chat/' + roomName + '/';
+    const chatSocket = new WebSocket(websocket_path);
+
+    chatSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        const message = data['message'];
+        const receive_user = data['user'];
+        const user = '{{ user }}';
+
+        if (receive_user === user) {
+            // document.querySelector('.chat').innerHTML += '<li><div class="chat-body"><p class="text-right"><strong>'+user+'</strong></p><p class="text-right">'+message+'</p></div></li>';
+            $('<li><div class="chat-body"><p class="text-right"><strong>'+user+'</strong></p><p class="text-right">'+message+'</p></div></li>').appendTo($('.chat')) 
+        }
+        else {
+            // document.querySelector('.chat').innerHTML += '<li><div class="chat-body"><p class="text-left"><strong>'+receive_user+'</strong></p><p class="text-left">'+message+'</p></div></li>';
+            $('<li><div class="chat-body"><p class="text-left"><strong>'+receive_user+'</strong></p><p class="text-left">'+message+'</p></div></li>').appendTo($('.chat')) 
+        };
+        $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
+    };
+
+    chatSocket.onclose = function (e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInput = document.querySelector('#chat-message-input');
+        const message = messageInput.value;
+        chatSocket.send(JSON.stringify({
+            'message': message
+        }));
+        messageInput.value = '';
+    };
+
+</script>
+{% endblock %}
