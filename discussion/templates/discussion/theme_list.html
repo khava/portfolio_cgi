@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <p class="h2 mt-3 mb-5 font-weight-light text-center">Список тем</p>
+
+        <ul class="list-group mb-3">
+            {% for theme in themes %}
+                
+                <div class="row mb-2">
+                    <div class="block-list col-10" style="padding:0px;">
+                        <li class="list-group-item col-12" style="display:inline-block;">
+                            {{ theme.theme }}    
+                        </li>
+                    </div>
+                    <div class="block-button text-center col-1" style="padding:0px 5px;">
+                        <a class="btn btn-primary btn-lg col-12" href="{% url 'discussion' room_name=theme.pk %}"><small>Discuss</small> </a> 
+                    </div>
+                    <div class="block-button text-center col-1" style="padding:0px;">
+                        <a class="btn btn-primary btn-lg col-12" href="{% url 'description_theme' id=theme.pk %}"><small>Description</small></a> 
+                    </div>                    
+                </div>   
+                        
+            {% endfor %}
+        </ul>
+    
+    <a class="btn btn-primary btn-lg btn-block mb-3" href="{% url 'create_theme' %}">Добавить тему для обсуждения</a>
+</div>
+
+{% endblock %}

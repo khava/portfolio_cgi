@@ -1,16 +1,20 @@
-from django.http import HttpResponse
-from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
-from django.contrib.sites.shortcuts import get_current_site
-from django.utils.encoding import force_bytes, force_text
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.template.loader import render_to_string
-from django.core.mail import EmailMessage
-from django.contrib.auth.models import Group, Permission
+import os
 
-from accounts.tokens import account_activation_token
+from django.conf import settings
+from django.contrib.auth import login
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import EmailMessage
+from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.views.generic import View
+
+from accounts.forms import ProfileForm, SignupForm
 from accounts.models import User
-from accounts.forms import SignupForm
+from accounts.tokens import account_activation_token
+
 
 def signup(request):
     if request.method == 'POST':
@@ -39,6 +43,7 @@ def signup(request):
         form = SignupForm()
     return render(request, 'registration/signup.html', {'form': form})
 
+
 def activate(request, uidb64, token):
     try:
         uid = force_text(urlsafe_base64_decode(uidb64))
@@ -55,3 +60,23 @@ def activate(request, uidb64, token):
     else:
         message = 'Ссылка на активацию аккаунта недействительна'
         return render(request, 'registration/email_confirmation_page.html', {'message': message})  
+
+
+class ProfileView(View):
+
+    def get(self, request):
+        return render(request, 'registration/profile_page.html', context={'form': ProfileForm()})
+
+
+    def post(self, request): 
+        request.FILES['avatar'].name = request.user.email + '.jpg'
+        form = ProfileForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            user = User.objects.get(pk=request.user.pk)
+            if user.avatar.name != 'avatars/default_avatar.jpg':
+                os.remove(user.avatar.path)
+            user.avatar = form.cleaned_data['avatar']
+            user.save()
+
+        return redirect(reverse('profile'))

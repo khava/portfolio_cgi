@@ -1,10 +1,10 @@
 from django import forms
 
-from discussion.models import Topic
+from discussion.models import Theme
 
 
-class CreateTopicForm(forms.ModelForm):
+class CreateThemeForm(forms.ModelForm):
     
     class Meta:
-        model = Topic
-        fields = ('topic', )
+        model = Theme
+        fields = ('theme', 'description')

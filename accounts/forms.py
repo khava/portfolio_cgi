@@ -26,3 +26,9 @@ class UserCreationForm(auth_UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'email')
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('avatar', )

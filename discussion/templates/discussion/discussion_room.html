@@ -6,54 +6,103 @@
 
 <div class="container">
     <div class="row">
-        <div class="card mt-5">
-            <div class="card-header">
-                Тема - {{ topic.topic }}
+
+        <div class="col-8 mt-5">
+            <div class="row">
+
+                <div class="card col-4" style="width:400px">
+                    <img class="card-img-top" src="img_avatar1.png" alt="Card image">
+                </div>
+
+                <div class="card col-4" style="width:400px">
+                    <img class="card-img-top" src="img_avatar1.png" alt="Card image">
+                </div>
+
+                <div class="card col-4" style="width:400px">
+                    <img class="card-img-top" src="img_avatar1.png" alt="Card image">
+                </div>
             </div>
 
-            <div class="card-body" id="all_messages">
-                <ul class="chat">
-                    {% if user.is_authenticated %}
-                        {% for comment in comments %}
-                            {% if comment.author == user %}
-                            <li>
-                                <div class="chat-body">
-                                    <p class="text-right"><strong>{{ comment.author }}</strong></p>
-                                    <!-- <small class="text-muted">{{ comment.created_date }}</small> -->
-                                    <p class="text-right">{{ comment.comment }}</p>
-                                </div>
-                            </li>
+            <div class="row">
+
+                <div class="card col-4" style="width:400px">
+                    <img class="card-img-top" src="" alt="Card image">
+                </div>
+
+                <div class="card col-4" style="width:400px">
+                    <img class="card-img-top" src="img_avatar1.png" alt="Card image">
+                </div>
+
+                <div class="card col-4" style="width:400px">
+                    <img class="card-img-top" src="img_avatar1.png" alt="Card image">
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-4 mt-5">
+
+            <div class="card">
+                <div class="card-header">
+                    Тема - {{ theme.theme }}
+                </div>
+    
+                <div class="card-body" id="all_messages">
+                    <ul class="chat">
+                        
+                        {% if user.is_authenticated %}
+    
+                            <!-- Если user является автором темы, он не сможет оставлять комменты -->
+                            {% if user != theme.author %}
+                        
+    
+                                {% for comment in comments %}
+                                    {% if comment.author == user %}
+                                    <li>
+                                        <div class="chat-body">
+                                            <p class="text-right"><strong>{{ comment.author }}</strong></p>
+                                            <!-- <small class="text-muted">{{ comment.created_date }}</small> -->
+                                            <p class="text-right">{{ comment.comment }}</p>
+                                        </div>
+                                    </li>
+                                    {% else %}
+                                    <li>
+                                        <div class="chat-body">
+                                            <p class="text-left"><strong>{{ comment.author }}</strong></p>
+                                            <!-- <small class="text-muted">{{ comment.created_date }}</small> -->
+                                            <p class="text-left">{{ comment.comment }}</p>
+                                        </div>
+                                    </li>
+                                    {% endif %}
+                                {% endfor %}
+    
+    
                             {% else %}
-                            <li>
-                                <div class="chat-body">
-                                    <p class="text-left"><strong>{{ comment.author }}</strong></p>
-                                    <!-- <small class="text-muted">{{ comment.created_date }}</small> -->
-                                    <p class="text-left">{{ comment.comment }}</p>
-                                </div>
-                            </li>
+                                <div>Автор темы не может участвовать в обсуждении</div>
                             {% endif %}
-                        {% endfor %}
-
-                    {% else %}
-                        <div>Please Login</div>
-                    {% endif %}
-                </ul>
-            </div>
-
-            <div class="card-footer">
-                <div class="input-group">
-                    <input id="chat-message-input" type="text" class="form-control input-sm" placeholder=""/>
-                    <span class="input-group-btn">
-                        <button class="btn btn-dark btn-md" id="chat-message-submit">Отправить</button>
-                    </span>
+    
+    
+                        {% else %}
+                            <div>Please Login</div>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="card-footer">
+                    <div class="input-group">
+                        <input id="chat-message-input" type="text" class="form-control input-sm" placeholder=""/>
+                        <span class="input-group-btn">
+                            <button class="btn btn-dark btn-md" id="chat-message-submit">Отправить</button>
+                        </span>
+                    </div>
                 </div>
             </div>
 
         </div>
+    
     </div>
 </div>
 
-{{ topic.pk|json_script:"room-name" }}
+{{ theme.pk|json_script:"room-name" }}
 <script>
 
     $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);

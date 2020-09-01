@@ -3,7 +3,7 @@ import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 
-from discussion.models import Topic, Comment
+from discussion.models import Theme, Comment
 from accounts.models import User
 
 
@@ -13,14 +13,15 @@ class ChatConsumer(WebsocketConsumer):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
 
         # print(len(Group('guis').channel_layer.group_channels('guis')))
-        # print(len(self.channel_layer.groups.get(self.room_name, {}).items()))
+        print(len(self.channel_layer.groups.get(self.room_name, {}).items()))
 
         async_to_sync(self.channel_layer.group_add)(
             self.room_name,
             self.channel_name
         )
         
-        if self.scope["user"].is_anonymous:
+        if self.scope["user"].is_anonymous or Theme.objects.filter(pk=self.room_name).first().author == self.scope['user']:
+            self.send()
             self.close()
         else:
             self.accept()
@@ -42,12 +43,14 @@ class ChatConsumer(WebsocketConsumer):
         if not self.scope['user'].is_authenticated:
             return
 
-        Comment.objects.create(
-            author=User.objects.get(username=user),
-            comment=message,
-            topic=Topic.objects.get(pk=self.room_name),
-            color='yellow' # !!!
-        )
+        if len(message) > 10:
+
+            Comment.objects.create(
+                author=User.objects.get(username=user),
+                comment=message,
+                theme=Theme.objects.get(pk=self.room_name),
+                color='yellow' # !!!
+            )
 
         async_to_sync(self.channel_layer.group_send)(
             self.room_name,

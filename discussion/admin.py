@@ -1,13 +1,13 @@
 from django.contrib import admin
 
-from discussion.models import Topic, Comment
+from discussion.models import Theme, Comment
 
 
-@admin.register(Topic)
-class TopicAdmin(admin.ModelAdmin):
-    list_display = ('topic', 'created_date', 'author')
+@admin.register(Theme)
+class ThemeAdmin(admin.ModelAdmin):
+    list_display = ('theme', 'created_date', 'author')
 
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('comment', 'color', 'topic', 'author', 'created_date')
+    list_display = ('comment', 'color', 'theme', 'author', 'created_date')
