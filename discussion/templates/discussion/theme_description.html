@@ -9,7 +9,7 @@
           <p class="mb-2 text-muted">{{ theme.author }}</p>
           <p class="mb-2 text-muted">{{ theme.created_date }}</p>
           <p class="card-text">{{ theme.description }}</p>
-          <a class="btn btn-primary" href="{% url 'discussion' room_name=theme.pk %}">Перейти на страницу обсуждения</a>
+          <a class="btn btn-primary" href="{% url 'discussion' theme_id=theme.pk %}">Перейти на страницу обсуждения</a>
       </div>
 </div>
 

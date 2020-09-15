@@ -1,30 +1,60 @@
 import json
+from builtins import object
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
+from django.core import serializers
 
-from discussion.models import Theme, Comment
 from accounts.models import User
+from discussion.models import Comment, Room, RoomUser, Theme
 
 
-class ChatConsumer(WebsocketConsumer):
-    
-    def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
+def get_or_create_room(theme):
 
-        # print(len(Group('guis').channel_layer.group_channels('guis')))
-        print(len(self.channel_layer.groups.get(self.room_name, {}).items()))
-
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_name,
-            self.channel_name
-        )
+    if Room.objects.filter(theme=theme).exists():
+        room = Room.objects.filter(theme=theme).last()
         
-        if self.scope["user"].is_anonymous or Theme.objects.filter(pk=self.room_name).first().author == self.scope['user']:
-            self.send()
-            self.close()
+        if room.users.count() < 6:
+            room_name = room.name
         else:
+            room_name = f'theme_{theme.pk}_room_{room.pk + 1}'
+            room = Room()
+            room.name = room_name
+            room.theme = theme
+    else:
+        room_name = f'theme_{theme.pk}_room_1'
+        room = Room()
+        room.name = room_name
+        room.theme = theme
+
+    return room, room_name
+    
+
+class DiscussionConsumer(WebsocketConsumer):
+
+    def connect(self):
+
+        self.theme = Theme.objects.filter(pk=self.scope['url_route']['kwargs']['theme_id']).first()
+        self.room, self.room_name = get_or_create_room(self.theme)
+
+        if self.scope['user'].is_anonymous or self.theme.author == self.scope['user']:
+            self.close()
+             
+        else:
+
+            self.room.save()
+
+            async_to_sync(self.channel_layer.group_add)(
+                self.room_name,
+                self.channel_name
+            )
+            user = User.objects.get(username=self.scope['user'])
+
+            if not RoomUser.objects.filter(room=self.room, user=user).exists():
+                RoomUser.objects.create(room=self.room, user=user)            
+
             self.accept()
+
 
     def disconnect(self, close_code):
 
@@ -33,39 +63,84 @@ class ChatConsumer(WebsocketConsumer):
             self.channel_name
         )
 
+
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
-        user = str(self.scope['user'])
         
-        if not message:
-            return
-        if not self.scope['user'].is_authenticated:
+        if not message or not self.scope['user'].is_authenticated:
             return
 
         if len(message) > 10:
 
             Comment.objects.create(
-                author=User.objects.get(username=user),
                 comment=message,
-                theme=Theme.objects.get(pk=self.room_name),
-                color='yellow' # !!!
+                color='yellow', # !!!
+                theme=self.theme,
+                author=User.objects.get(username=self.scope['user']),
+                room=self.room,
             )
+
 
         async_to_sync(self.channel_layer.group_send)(
             self.room_name,
             {
-                'type': 'chat_message',
+                'type': 'discussion_message',
                 'message': message,
-                'user': user
+                'user': str(self.scope['user']),
             }
         )
 
-    def chat_message(self, event):
-        message = event['message']
-        user = event['user']
+
+    def discussion_message(self, event):
         
         self.send(text_data=json.dumps({
-            'message': message,
-            'user': user
+            'message': event['message'],
+            'user': event['user'],
         }))
+
+
+
+# class RoomUsersDisplayConsumer(WebsocketConsumer):
+
+    # def connect(self):
+
+    #     self.theme = Theme.objects.filter(pk=self.scope['url_route']['kwargs']['theme_id']).first()
+    #     self.room, self.room_name = get_or_create_room(self.theme)
+
+    #     async_to_sync(self.channel_layer.group_add)(
+    #         self.room_name,
+    #         self.channel_name
+    #     )
+        
+    #     self.accept()
+
+    #     self.is_connected = True
+
+    #     while self.is_connected:
+
+    #         room_users = serializers.serialize('json', self.room.users.all())
+    #         async_to_sync(self.channel_layer.group_send)(
+    #             self.room_name,
+    #             {
+    #                 'type': 'send_room_users',
+    #                 'room_users': room_users,
+    #             }
+    #         )
+            
+    # def disconnect(self, close_code):
+
+    #     self.is_connected = False
+
+    #     async_to_sync(self.channel_layer.group_discard)(
+    #         self.room_name,
+    #         self.channel_name
+    #     )
+
+    # def send_room_users(self, event):
+
+    #     print(event)
+        
+    #     self.send(text_data=json.dumps({
+    #         'room_users': event['room_users'],
+    #     }))

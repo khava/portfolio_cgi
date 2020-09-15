@@ -10,35 +10,19 @@
         <div class="col-8 mt-5">
             <div class="row">
 
-                <div class="card col-4" style="width:400px">
-                    <img class="card-img-top" src="img_avatar1.png" alt="Card image">
+                <div class="room-users">
+                    {% for user in users %}
+                        <div class="user-avatar col-4 m-1" style="width:400px; height: 400; border: 10px solid cornflowerblue;">
+                            <div>
+                                <img class="card-img-top" src="{{ user.avatar.url }}" alt="User avatar">
+                            </div>
+                            <h6 class="user-name">{{ user.username }}</h6>
+                        </div>
+                    {% endfor %}
                 </div>
 
-                <div class="card col-4" style="width:400px">
-                    <img class="card-img-top" src="img_avatar1.png" alt="Card image">
-                </div>
-
-                <div class="card col-4" style="width:400px">
-                    <img class="card-img-top" src="img_avatar1.png" alt="Card image">
-                </div>
-            </div>
-
-            <div class="row">
-
-                <div class="card col-4" style="width:400px">
-                    <img class="card-img-top" src="" alt="Card image">
-                </div>
-
-                <div class="card col-4" style="width:400px">
-                    <img class="card-img-top" src="img_avatar1.png" alt="Card image">
-                </div>
-
-                <div class="card col-4" style="width:400px">
-                    <img class="card-img-top" src="img_avatar1.png" alt="Card image">
-                </div>
             </div>
         </div>
-
 
         <div class="col-4 mt-5">
 
@@ -55,7 +39,6 @@
                             <!-- Если user является автором темы, он не сможет оставлять комменты -->
                             {% if user != theme.author %}
                         
-    
                                 {% for comment in comments %}
                                     {% if comment.author == user %}
                                     <li>
@@ -76,7 +59,6 @@
                                     {% endif %}
                                 {% endfor %}
     
-    
                             {% else %}
                                 <div>Автор темы не может участвовать в обсуждении</div>
                             {% endif %}
@@ -96,20 +78,18 @@
                     </div>
                 </div>
             </div>
-
         </div>
-    
     </div>
 </div>
 
-{{ theme.pk|json_script:"room-name" }}
+{{ theme.pk|json_script:"theme_id" }}
 <script>
 
     $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
-    const roomName = JSON.parse(document.getElementById('room-name').textContent);
+    const themeID = JSON.parse(document.getElementById('theme_id').textContent);
     const ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-    const websocket_path= ws_scheme + '://' + window.location.host + '/ws/chat/' + roomName + '/';
-    const chatSocket = new WebSocket(websocket_path);
+    const chatSocket = new WebSocket(ws_scheme + '://' + window.location.host + '/ws/discussion/' + themeID + '/');
+
 
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
@@ -127,6 +107,7 @@
         };
         $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
     };
+
 
     chatSocket.onclose = function (e) {
         console.error('Chat socket closed unexpectedly');
@@ -147,6 +128,84 @@
         }));
         messageInput.value = '';
     };
+
+    
+    // Ajax запрос для получения новых пользователей
+    function getRoomUsers() {
+        
+        let roomUsers = document.getElementsByClassName("room-users")[0].childElementCount;
+        let last_user_name = $('.room-users .user-avatar').last().text().trim();
+
+        $.ajax({
+            type: 'GET',
+            dataType: 'JSON',
+            url: "{% url 'discussion' theme_id=0 %}".replace('0', themeID),
+            data: {
+                last_user_name: last_user_name,
+            },
+            success: function(data) {    
+
+                    for (let user of data) {
+                        
+                        userAvatar = 
+                            '<div class="user-avatar col-4 m-1" style="width:400px; height: 400; border: 10px solid cornflowerblue;"> \
+                                <div> \
+                                    <img class="card-img-top" src="' + user.avatar + '" alt="User avatar"> \
+                                </div> \
+                                <h6 class="user-name">' + user.username + '</h6> \
+                            </div>';
+
+                        $(userAvatar).appendTo($('.room-users'));
+                    }
+                
+                if (roomUsers < 6) {
+                    setTimeout(getRoomUsers, 1000);
+                }
+            },
+            error: function(data) {
+                // console.log(data)
+            }
+        })}
+
+    if (chatSocket.readyState === WebSocket.OPEN || chatSocket.readyState === chatSocket.CONNECTING) {
+        getRoomUsers();
+    }
+    
+    
+
+    // const DISCUSSION_TIME = 18000000; // 30 minutes (time in milliseconds)
+    // const DISCUSSION_TIME_ONE_USER = 300000; // 5 minutes (time in milliseconds)
+    // const USER_COLORS = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
+    
+
+    // function changeColor() {
+    //     let roomUsers = document.getElementsByClassName("room-users")[0].childElementCount;
+
+    //     if (roomUsers == 6){
+
+    //     }
+    //     let userColor = document.getElementsByClassName("user-avatar");
+
+        
+    
+    //     for (let i in userColor) {
+
+    //     }
+
+    //     for (let color of USER_COLORS) {
+    //         for (i of userColor){
+               
+    //             i.style.border="10px solid pink";
+    //         }
+            
+    //     }
+    // }
+
+    // changeColor();
+
+   
+
+
 
 </script>
 {% endblock %}
