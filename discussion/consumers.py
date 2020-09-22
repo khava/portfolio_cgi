@@ -39,9 +39,10 @@ class DiscussionConsumer(WebsocketConsumer):
 
         if self.scope['user'].is_anonymous or self.theme.author == self.scope['user']:
             self.close()
+
+            print('CONNECT CLOSE')
              
         else:
-
             self.room.save()
 
             async_to_sync(self.channel_layer.group_add)(
@@ -54,9 +55,13 @@ class DiscussionConsumer(WebsocketConsumer):
                 RoomUser.objects.create(room=self.room, user=user)            
 
             self.accept()
+            
+            print('CONNECT')
 
 
     def disconnect(self, close_code):
+
+        print('DISCONNECT')
 
         async_to_sync(self.channel_layer.group_discard)(
             self.room_name,
@@ -65,8 +70,11 @@ class DiscussionConsumer(WebsocketConsumer):
 
 
     def receive(self, text_data):
+        print('RECEIVE')
+
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
+        color_value = text_data_json['colorValue']
         
         if not message or not self.scope['user'].is_authenticated:
             return
@@ -75,7 +83,7 @@ class DiscussionConsumer(WebsocketConsumer):
 
             Comment.objects.create(
                 comment=message,
-                color='yellow', # !!!
+                color=color_value,
                 theme=self.theme,
                 author=User.objects.get(username=self.scope['user']),
                 room=self.room,
@@ -93,6 +101,7 @@ class DiscussionConsumer(WebsocketConsumer):
 
 
     def discussion_message(self, event):
+        print('DISCUSSION_MESSAGE')
         
         self.send(text_data=json.dumps({
             'message': event['message'],

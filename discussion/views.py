@@ -53,17 +53,16 @@ class DiscussionView(View):
     def get(self, request, theme_id):
 
         users = []
-
         theme = Theme.objects.filter(pk=theme_id).first()
-        comments = Comment.objects.filter(theme=theme)
         room = Room.objects.filter(theme=theme).last()
+        comments = Comment.objects.filter(theme=theme, room=room)
 
         if room is not None:
-
             users = User.objects.filter(rooms__name=room.name).order_by('roomuser__created_date')
 
         if request.is_ajax():
-            if request.GET['last_user_name'] is not None:
+
+            if request.GET['last_user_name']:
                 last_user_name = User.objects.get(username=request.GET['last_user_name'])
                 user = User.objects.get(username=last_user_name)
                 date = RoomUser.objects.get(room=room, user=user).created_date
@@ -73,8 +72,13 @@ class DiscussionView(View):
                 for user in new_users:
                     new_users_data.append({'username': user.username, 'avatar': user.avatar.url})
 
-            # return HttpResponse(serializers.serialize('json', new_users, fields=('username', 'avatar')))
-            return HttpResponse(json.dumps(new_users_data))
+                return HttpResponse(json.dumps(new_users_data))
+
+            else:
+                new_users_data = []
+                for user in users:
+                    new_users_data.append({'username': user.username, 'avatar': user.avatar.url})
+                return HttpResponse(json.dumps(new_users_data))
 
         context = {
             'theme': theme,

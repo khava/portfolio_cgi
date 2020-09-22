@@ -6,31 +6,27 @@
 
 <div class="container">
     <div class="row">
-
         <div class="col-8 mt-5">
-            <div class="row">
-
-                <div class="room-users">
+            <div class="row room-users">
+                <!-- <div class="room-users"> -->
                     {% for user in users %}
-                        <div class="user-avatar col-4 m-1" style="width:400px; height: 400; border: 10px solid cornflowerblue;">
+                        <div class="user-avatar col-3 m-1" style="width:400px; height: 400; border: 10px solid #343a40;">
                             <div>
                                 <img class="card-img-top" src="{{ user.avatar.url }}" alt="User avatar">
                             </div>
                             <h6 class="user-name">{{ user.username }}</h6>
                         </div>
                     {% endfor %}
-                </div>
-
+                <!-- </div> -->
             </div>
         </div>
 
         <div class="col-4 mt-5">
-
             <div class="card">
                 <div class="card-header">
                     Тема - {{ theme.theme }}
                 </div>
-    
+
                 <div class="card-body" id="all_messages">
                     <ul class="chat">
                         
@@ -90,7 +86,6 @@
     const ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
     const chatSocket = new WebSocket(ws_scheme + '://' + window.location.host + '/ws/discussion/' + themeID + '/');
 
-
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
         const message = data['message'];
@@ -108,7 +103,6 @@
         $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
     };
 
-
     chatSocket.onclose = function (e) {
         console.error('Chat socket closed unexpectedly');
     };
@@ -123,17 +117,28 @@
     document.querySelector('#chat-message-submit').onclick = function(e) {
         const messageInput = document.querySelector('#chat-message-input');
         const message = messageInput.value;
+
+        let colorValue; 
+        const roomUsersAvatar = document.getElementsByClassName("room-users")[0].children; 
+            for(let i = 0; i < roomUsersAvatar.length; i++){
+                if ('{{ user }}' === roomUsersAvatar[i].innerText){
+                    colorValue = roomUsersAvatar[i].style.borderColor;
+                }
+            }
+        
         chatSocket.send(JSON.stringify({
-            'message': message
+            'message': message,
+            'colorValue': colorValue,
         }));
         messageInput.value = '';
     };
 
+    let discussionTimeIntervalId;
+    let colorFlag = false;
     
     // Ajax запрос для получения новых пользователей
     function getRoomUsers() {
-        
-        let roomUsers = document.getElementsByClassName("room-users")[0].childElementCount;
+        let roomUsersCount = document.getElementsByClassName("room-users")[0].childElementCount;
         let last_user_name = $('.room-users .user-avatar').last().text().trim();
 
         $.ajax({
@@ -144,11 +149,9 @@
                 last_user_name: last_user_name,
             },
             success: function(data) {    
-
                     for (let user of data) {
-                        
                         userAvatar = 
-                            '<div class="user-avatar col-4 m-1" style="width:400px; height: 400; border: 10px solid cornflowerblue;"> \
+                            '<div class="user-avatar col-3 m-1" style="width:400px; height: 400; border: 10px solid #343a40;"> \
                                 <div> \
                                     <img class="card-img-top" src="' + user.avatar + '" alt="User avatar"> \
                                 </div> \
@@ -157,55 +160,52 @@
 
                         $(userAvatar).appendTo($('.room-users'));
                     }
-                
-                if (roomUsers < 6) {
+
+                if (roomUsersCount < 6) {
                     setTimeout(getRoomUsers, 1000);
                 }
+                else {
+                    colorFlag = true;
+                }
             },
-            error: function(data) {
-                // console.log(data)
+            complete: function() {
+                if (colorFlag === true){
+                    setTimeout(() => {
+                        changeColor();
+                        discussionTimeIntervalId = setInterval(changeColor, discussionTimeOneUser);
+                    }, 1000);
+                    
+                }
             }
-        })}
+        })};
 
     if (chatSocket.readyState === WebSocket.OPEN || chatSocket.readyState === chatSocket.CONNECTING) {
         getRoomUsers();
     }
-    
-    
 
-    // const DISCUSSION_TIME = 18000000; // 30 minutes (time in milliseconds)
-    // const DISCUSSION_TIME_ONE_USER = 300000; // 5 minutes (time in milliseconds)
-    // const USER_COLORS = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
-    
+    let discussionTime = 60000; //18000000; // 30 minutes (time in milliseconds)
+    let discussionTimeOneUser = 10000; //300000; // 5 minutes (time in milliseconds)
+    let userColors = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
 
-    // function changeColor() {
-    //     let roomUsers = document.getElementsByClassName("room-users")[0].childElementCount;
+    function changeColor() {
+        let roomUsersAvatar = document.getElementsByClassName("room-users")[0].children; 
 
-    //     if (roomUsers == 6){
+        for (let i = 0; i < roomUsersAvatar.length; i++) {
+            roomUsersAvatar[i].style.border = `10px solid ${userColors[i]}`;
+        }
 
-    //     }
-    //     let userColor = document.getElementsByClassName("user-avatar");
+        userColors.unshift(userColors.pop());
 
-        
-    
-    //     for (let i in userColor) {
+        discussionTime = discussionTime - discussionTimeOneUser;
+        if (discussionTime === 0) {
 
-    //     }
-
-    //     for (let color of USER_COLORS) {
-    //         for (i of userColor){
-               
-    //             i.style.border="10px solid pink";
-    //         }
-            
-    //     }
-    // }
-
-    // changeColor();
-
-   
-
-
+            clearInterval(discussionTimeIntervalId);
+            setTimeout(() => {
+                chatSocket.onclose();
+                alert('Обсуждение завершено!');
+            }, 1000);
+        }
+    };
 
 </script>
 {% endblock %}
