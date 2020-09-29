@@ -10,4 +10,6 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(redirect_authenticated_user=True), name='login'),
     path('', include('django.contrib.auth.urls')),
     path('profile/', views.ProfileView.as_view(), name='profile'),
+    path('profile/commetns/<int:discussion_id>/', views.UserCommentsView.as_view(), name='user_comments'),
+    path('profile/<str:username>/', views.UserAccountDetailView.as_view(), name='user_account'),
 ]

@@ -25,7 +25,7 @@
     color: rgb(66, 62, 62);
 }
 
-.card-body
+.chat-card
 {
     overflow-y: scroll;
     height: 250px;

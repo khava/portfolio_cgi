@@ -1,0 +1,21 @@
+{% extends 'moderator/moderator_base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <ul class="list-group mt-5">
+        {% for theme in themes %}
+            
+            <div class="mb-2">
+                <div class="block-list" style="padding:0px;">
+                    <a class="list-group-item" style="text-decoration: none;" href="{% url 'theme_detail' theme_id=theme.pk %}">{{ theme.theme }}</a> 
+                </div>       
+            </div>   
+                    
+        {% endfor %}
+    </ul>
+</div>
+
+
+
+{% endblock %}

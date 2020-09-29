@@ -5,28 +5,19 @@
 <main class="container">
   <section>
     <div class="row">
-  
       <div class="col-6 mt-3">
-          <img class="mb-3" style="height: 200px; width: 200px; border:3px solid black;" src="{{ user.avatar.url }}" alt="User avatar">
-          <form action="" method="POST" enctype="multipart/form-data">
-              {% csrf_token %}
-              <input type="file" name="avatar" accept="image/*" id="id_avatar">
-              <input type="submit" class="btn btn-info" value="Изменить фото профиля">
-          </form>    
+          <img class="mb-3" style="height: 200px; width: 200px; border:3px solid black;" src="{{ user.avatar.url }}" alt="User avatar">  
       </div>
-  
       <div class="col-6 mt-3">
           <h3>{{ user.username }}</h3>
           <h5>{{ user.email }}</h5>
       </div>
-      
     </div>
   </section>
 
   
   <section class="mt-5">
-
-    <h3 class="mb-3">Мои темы</h3>
+    <h3 class="mb-3">Темы</h3>
 
     <div class="accordion" id="accordionExample">
 
@@ -53,11 +44,9 @@
         {% endfor %}
 
       {% else %}
-        <p>Вы не создавали тему</p>
+        <p>Пользователь не создавал темы</p>
       {% endif %}
-
-      <a class="btn btn-info mt-3 mb-3" href="{% url 'create_theme' %}">Создать тему</a>
-
+      
     </div>
   
   </section>

@@ -7,6 +7,7 @@ from django.urls import reverse_lazy, reverse
 from django.views.generic import View, ListView, CreateView
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
+from django.shortcuts import get_object_or_404
 from django.core import serializers
 
 from discussion.models import Theme, Room, RoomUser, Comment
@@ -36,14 +37,14 @@ class CreateThemeView(CreateView):
             theme.author = request.user
             theme.save()
 
-        return redirect(reverse('main'))
+        return redirect(reverse('main_page'))
 
     
 class DescriptionThemeView(View):
 
     def get(self, request, id):
 
-        theme = Theme.objects.filter(pk=id).first()
+        theme = get_object_or_404(Theme, pk=id)
         return render(request, 'discussion/theme_description.html', context={'theme': theme})
 
 
@@ -53,7 +54,7 @@ class DiscussionView(View):
     def get(self, request, theme_id):
 
         users = []
-        theme = Theme.objects.filter(pk=theme_id).first()
+        theme = get_object_or_404(Theme, pk=theme_id)
         room = Room.objects.filter(theme=theme).last()
         comments = Comment.objects.filter(theme=theme, room=room)
 

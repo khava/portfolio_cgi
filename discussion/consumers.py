@@ -1,9 +1,9 @@
 import json
-from builtins import object
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 from django.core import serializers
+from django.shortcuts import get_object_or_404
 
 from accounts.models import User
 from discussion.models import Comment, Room, RoomUser, Theme
@@ -49,7 +49,7 @@ class DiscussionConsumer(WebsocketConsumer):
                 self.room_name,
                 self.channel_name
             )
-            user = User.objects.get(username=self.scope['user'])
+            user = get_object_or_404(User, username=self.scope['user'])
 
             if not RoomUser.objects.filter(room=self.room, user=user).exists():
                 RoomUser.objects.create(room=self.room, user=user)            

@@ -1,0 +1,5 @@
+.comments-card {
+    overflow-y: scroll;
+    height: 250px;
+    width: 22rem;
+}

@@ -2,18 +2,22 @@ import os
 
 from django.conf import settings
 from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.generic import View
+from django.shortcuts import get_object_or_404
 
 from accounts.forms import ProfileForm, SignupForm
 from accounts.models import User
 from accounts.tokens import account_activation_token
+from discussion.models import Room, Theme
 
 
 def signup(request):
@@ -64,10 +68,18 @@ def activate(request, uidb64, token):
 
 class ProfileView(View):
 
+    @method_decorator(login_required)
     def get(self, request):
-        return render(request, 'registration/profile_page.html', context={'form': ProfileForm()})
+        user = get_object_or_404(User, pk=request.user.pk)
+        themes = Theme.objects.filter(author=user)
+        context = {
+            'form': ProfileForm(),
+            'themes': themes,
+        }
+        return render(request, 'registration/profile_page.html', context=context)
 
 
+    @method_decorator(login_required)
     def post(self, request): 
         request.FILES['avatar'].name = request.user.email + '.jpg'
         form = ProfileForm(request.POST, request.FILES)
@@ -80,3 +92,42 @@ class ProfileView(View):
             user.save()
 
         return redirect(reverse('profile'))
+
+
+class UserCommentsView(View):
+
+    @method_decorator(login_required)
+    def get(self, request, discussion_id):
+        room = get_object_or_404(Room, id=discussion_id)
+        
+        context = {
+            'room': room,
+            'red': room.comments.filter(color='red'),
+            'blue': room.comments.filter(color='blue'),
+            'yellow': room.comments.filter(color='yellow'),
+            'green': room.comments.filter(color='green'),
+            'white': room.comments.filter(color='white'),
+            'black': room.comments.filter(color='black'),
+        }
+        return render(request, 'registration/user_comments_page.html', context=context)
+
+
+class UserAccountDetailView(View):
+
+    @method_decorator(login_required)
+    def get(self, request, username):
+
+        if username == request.user.username:
+            return redirect(reverse('profile'))
+        
+        user = get_object_or_404(User, username=username)
+        themes = Theme.objects.filter(author=user)
+        context = {
+            'user': user,
+            'themes': themes,
+        }
+
+        return render(request, 'registration/user_account_page.html', context=context)
+
+
+
