@@ -35,9 +35,11 @@
         
             <div id="collapse{{ theme.pk }}" class="collapse" aria-labelledby="heading{{ theme.pk }}" data-parent="#accordionExample">
               <div class="card-body">
+              {% if request.user.is_staff %}
                {% for room in theme.rooms.all %}
-                  <a href="{% url 'user_comments' discussion_id=room.pk %}">Обсужедение {{ room.pk }}, дата: {{ room.created_date }}</a>
+                  <a href="{% url 'user_comments' discussion_id=room.pk %}">Обсужедение {{ room.pk }}, дата: {{ room.created_date }}</a> <br>
                {% endfor %}
+              {% endif %}
               </div>
             </div>
           </div>
