@@ -103,7 +103,7 @@ DATABASES = {
         'NAME': 'portfolio_cgi',
         'USER': 'portfolio_cgi',
         'PASSWORD': 'portfolio_cgi',
-        'HOST': 'portfolio_cgi.herokuapp.com',
+        'HOST': 'portfolio-cgi.herokuapp.com',
         'PORT': '5432',
     }
 }
