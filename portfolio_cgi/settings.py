@@ -103,7 +103,7 @@ DATABASES = {
         'NAME': 'portfolio_cgi',
         'USER': 'portfolio_cgi',
         'PASSWORD': 'portfolio_cgi',
-        'HOST': '192.168.99.100',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }
