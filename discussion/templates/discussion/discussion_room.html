@@ -122,11 +122,19 @@
             }
         }
 
-        chatSocket.send(JSON.stringify({
-            'message': message,
-            'colorValue': colorValue,
-        }));
-        messageInput.value = '';
+        if (roomUsersAvatar.length === 6){
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'colorValue': colorValue,
+            }));
+
+            messageInput.value = '';
+            
+        } else {
+            messageInput.value = '';
+            alert('Недостаточно участников');
+            
+        }
     };
 
     let discussionTimeIntervalId;

@@ -63,6 +63,15 @@ class DiscussionConsumer(WebsocketConsumer):
 
         print('DISCONNECT')
 
+        if self.room.comments.count() == 0 or self.room.roomuser_set.count() == 0:
+            self.room.delete()
+
+        user = get_object_or_404(User, username=self.scope['user'])
+
+        if Comment.objects.filter(room=self.room, author=user).count() == 0:
+            print(Comment.objects.filter(room=self.room, author=user).count())
+            self.room.roomuser_set.filter(user=user).delete()
+
         async_to_sync(self.channel_layer.group_discard)(
             self.room_name,
             self.channel_name
