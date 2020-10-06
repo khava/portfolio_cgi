@@ -121,44 +121,45 @@ class DiscussionConsumer(WebsocketConsumer):
 
 # class RoomUsersDisplayConsumer(WebsocketConsumer):
 
-    # def connect(self):
+#     def connect(self):
 
-    #     self.theme = Theme.objects.filter(pk=self.scope['url_route']['kwargs']['theme_id']).first()
-    #     self.room, self.room_name = get_or_create_room(self.theme)
+#         self.theme = Theme.objects.filter(pk=self.scope['url_route']['kwargs']['theme_id']).first()
+#         self.room, self.room_name = get_or_create_room(self.theme)
 
-    #     async_to_sync(self.channel_layer.group_add)(
-    #         self.room_name,
-    #         self.channel_name
-    #     )
+#         async_to_sync(self.channel_layer.group_add)(
+#             self.room_name,
+#             self.channel_name
+#         )
         
-    #     self.accept()
+#         self.accept()
 
-    #     self.is_connected = True
+#         self.is_connected = True
 
-    #     while self.is_connected:
+#         while self.is_connected:
 
-    #         room_users = serializers.serialize('json', self.room.users.all())
-    #         async_to_sync(self.channel_layer.group_send)(
-    #             self.room_name,
-    #             {
-    #                 'type': 'send_room_users',
-    #                 'room_users': room_users,
-    #             }
-    #         )
+#             room_users = serializers.serialize('json', self.room.users.all())
+#             async_to_sync(self.channel_layer.group_send)(
+#                 self.room_name,
+#                 {
+#                     'type': 'send_room_users',
+#                     'room_users': room_users,
+#                 }
+#             )
             
-    # def disconnect(self, close_code):
+#     def disconnect(self, close_code):
 
-    #     self.is_connected = False
+#         self.is_connected = False
+#         print(False)
 
-    #     async_to_sync(self.channel_layer.group_discard)(
-    #         self.room_name,
-    #         self.channel_name
-    #     )
+#         async_to_sync(self.channel_layer.group_discard)(
+#             self.room_name,
+#             self.channel_name
+#         )
 
-    # def send_room_users(self, event):
+#     def send_room_users(self, event):
 
-    #     print(event)
+#         print(event)
         
-    #     self.send(text_data=json.dumps({
-    #         'room_users': event['room_users'],
-    #     }))
+#         self.send(text_data=json.dumps({
+#             'room_users': event['room_users'],
+#         }))

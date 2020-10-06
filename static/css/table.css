@@ -1,0 +1,82 @@
+.room-users {
+    position: relative;
+    width: 550px;
+    height: 550px;
+    border: 1px;
+
+    border-radius: 50%;
+    margin: 1.50em auto 0;
+}
+
+.room-users div {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -5em;
+}
+
+.room-users img {
+    display: block;
+    width: 100%;
+}
+
+.avatar-1 {
+    transform: rotate(225deg) translate(20em) rotate(-225deg) translateY(-30px);
+    position: absolute;
+    width: 138px;
+    height: 138px;
+    background: #343a40; 
+    border: 15px solid #343a40;
+    border-radius: 10px; 
+}
+
+.avatar-2 {
+    transform: translate(-17em) translateY(-85px);
+    position: absolute;
+    width: 138px;
+    height: 138px;
+    background: #343a40; 
+    border: 15px solid #343a40;
+    border-radius: 10px; 
+}
+
+.avatar-3 {
+    transform: rotate(135deg) translate(14em) rotate(-135deg) translateY(-70px) translateX(-70px);
+    position: absolute;
+    width: 138px;
+    height: 138px;
+    background: #343a40; 
+    border: 15px solid #343a40;
+    border-radius: 10px; 
+}
+
+.avatar-4 {
+    transform: rotate(315deg) translate(22em) rotate(-315deg) translateX(-155px);
+    position: absolute;
+    width: 138px;
+    height: 138px;
+    background: #343a40;
+    border: 10px solid #343a40;
+    border-radius: 10px; 
+}
+
+.avatar-5 {
+    transform: translate(9em) translateY(-85px);
+    position: absolute;
+    width: 138px;
+    height: 138px;
+    background: #343a40;
+    border: 15px solid #343a40;
+    border-radius: 10px; 
+}
+
+.avatar-6 {
+    transform: rotate(45deg) translate(10em) rotate(-45deg) translateX(-20px) translateY(-20px) ;
+    position: absolute;
+    width: 138px;
+    height: 138px;
+    background: #343a40;
+    border: 15px solid #343a40;
+    border-radius: 10px; 
+}

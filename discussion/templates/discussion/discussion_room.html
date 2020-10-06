@@ -6,16 +6,53 @@
 
 <div class="container">
     <div class="row">
-        <div class="col-8 mt-5">
+        <div class="col-8">
             <div class="row room-users">
-                {% for user in users %}
-                    <div class="user-avatar col-3 m-1" style="width:400px; height: 400; border: 10px solid #343a40;">
-                        <div>
-                            <img class="card-img-top" src="{{ user.avatar.url }}" alt="User avatar">
-                        </div>
-                        <h6 class="user-name">{{ user.username }}</h6>
+
+                <img src ="{% static 'image/table.png' %}">
+                
+                {% if users.0 %}
+                    <div class="user-avatar avatar-1 col-3 m-1">                        
+                        <img class="card-img-top" src="{{ users.0.avatar.url }}" alt="User avatar">
+                        <h6 align="center" class="user-name">{{ users.0.username }}</h6>
                     </div>
-                {% endfor %}
+                {% endif %}
+
+                {% if users.1 %}
+                    <div class="user-avatar avatar-2 col-3 m-1">                       
+                        <img class="card-img-top" src="{{ users.1.avatar.url }}" alt="User avatar">                        
+                        <h6 align="center" class="user-name">{{ users.1.username }}</h6>
+                    </div>
+                {% endif %}
+
+                {% if users.2 %}
+                    <div class="user-avatar avatar-3 col-3 m-1">                        
+                        <img class="card-img-top" src="{{ users.2.avatar.url }}" alt="User avatar">                       
+                        <h6 align="center" class="user-name">{{ users.2.username }}</h6>
+                    </div>
+                {% endif %}
+
+                {% if users.3 %}
+                    <div class="user-avatar avatar-4 col-3 m-1">                        
+                        <img class="card-img-top" src="{{ users.3.avatar.url }}" alt="User avatar">                       
+                        <h6 align="center" class="user-name">{{ users.3.username }}</h6>
+                    </div>
+                {% endif %}
+
+                {% if users.4 %}
+                    <div class="user-avatar avatar-5 col-3 m-1">                       
+                        <img class="card-img-top" src="{{ users.4.avatar.url }}" alt="User avatar">                        
+                        <h6 align="center" class="user-name">{{ users.4.username }}</h6>
+                    </div>
+                {% endif %}
+
+                {% if users.5 %}
+                    <div class="user-avatar avatar-6 col-3 m-1">                       
+                        <img class="card-img-top" src="{{ users.5.avatar.url }}" alt="User avatar">                      
+                        <h6 align="center" class="user-name">{{ users.5.username }}</h6>
+                    </div>
+                {% endif %}
+  
             </div>
         </div>
 
@@ -112,10 +149,12 @@
 
     document.querySelector('#chat-message-submit').onclick = function (e) {
         const messageInput = document.querySelector('#chat-message-input');
-        const message = messageInput.value;
+        const meаssage = messageInput.value;
 
         let colorValue;
-        const roomUsersAvatar = document.getElementsByClassName("room-users")[0].children;
+        // let roomUsersAvatar = document.getElementsByClassName("room-users")[0].children;
+        let roomUsersAvatar = document.querySelectorAll(".room-users .user-avatar")
+        
         for (let i = 0; i < roomUsersAvatar.length; i++) {
             if ('{{ user }}' === roomUsersAvatar[i].innerText) {
                 colorValue = roomUsersAvatar[i].style.borderColor;
@@ -142,7 +181,8 @@
 
     // Ajax запрос для получения новых пользователей
     function getRoomUsers() {
-        let roomUsersCount = document.getElementsByClassName("room-users")[0].childElementCount;
+        // let roomUsersCount = document.getElementsByClassName("room-users")[0].childElementCount;
+        let roomUsersCount = document.querySelectorAll(".room-users .user-avatar").length;
         let last_user_name = $('.room-users .user-avatar').last().text().trim();
 
         $.ajax({
@@ -154,13 +194,18 @@
             },
             success: function (data) {
                 for (let user of data) {
+
+                    // let roomUsers = document.getElementsByClassName("room-users")[0].children;
+                    
+                    let roomUsers = document.querySelectorAll(".room-users .user-avatar")
+                    let className = roomUsers[roomUsers.length - 1].className.split(' ')[1]
+                    let number = parseInt(className.split('-')[1], 10) + 1
+                    
                     userAvatar =
-                        '<div class="user-avatar col-3 m-1" style="width:400px; height: 400; border: 10px solid #343a40;"> \
-                                <div> \
-                                    <img class="card-img-top" src="' + user.avatar + '" alt="User avatar"> \
-                                </div> \
-                                <h6 class="user-name">' + user.username + '</h6> \
-                            </div>';
+                        '<div class="user-avatar avatar-' + number + ' col-3 m-1" > \
+                            <img class="card-img-top" src="' + user.avatar + '" alt="User avatar"> \
+                            <h6 align="center" class="user-name">' + user.username + '</h6> \
+                        </div>';
 
                     $(userAvatar).appendTo($('.room-users'));
                 }
@@ -179,7 +224,7 @@
                     setTimeout(() => {
                         changeColor();
                         discussionTimeIntervalId = setInterval(changeColor, discussionTimeOneUser);
-                    }, 1000);
+                    }, 2000);
 
                 }
             }
@@ -195,12 +240,13 @@
     let userColors = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
 
     function changeColor() {
-        let roomUsersAvatar = document.getElementsByClassName("room-users")[0].children;
-
+        // let roomUsersAvatar = document.getElementsByClassName("room-users")[0].children;
+        let roomUsersAvatar = document.querySelectorAll(".room-users .user-avatar")
         for (let i = 0; i < roomUsersAvatar.length; i++) {
             roomUsersAvatar[i].style.border = `10px solid ${userColors[i]}`;
+            roomUsersAvatar[i].style.background = userColors[i];
         }
-
+        
         userColors.unshift(userColors.pop());
 
         discussionTime = discussionTime - discussionTimeOneUser;
@@ -210,9 +256,24 @@
             setTimeout(() => {
                 chatSocket.onclose();
                 alert('Обсуждение завершено!');
-            }, 1000);
+            }, discussionTimeOneUser);
         }
     };
+
+
+    // const roomUsersSocket = new WebSocket(ws_scheme + '://' + window.location.host + '/ws/discussion/' + themeID + '/room_users/');
+    // roomUsersSocket.onmessage = function(e){
+    // console.log("message", e);
+    // };
+    // roomUsersSocket.onopen = function(e){
+    //     console.log("open", e);
+    // };
+    // roomUsersSocket.onerror = function(e){
+    //     console.log("error", e)
+    // };
+    // roomUsersSocket.onclose = function(e){
+    //     console.log("close", e)
+    // };
 
 </script>
 {% endblock %}
