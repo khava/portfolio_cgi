@@ -52,17 +52,17 @@
 }
 
 .avatar-4 {
-    transform: rotate(315deg) translate(22em) rotate(-315deg) translateX(-155px);
+    transform: rotate(45deg) translate(10em) rotate(-45deg) translateX(-20px) translateY(-20px) ;
     position: absolute;
     width: 138px;
     height: 138px;
     background: #343a40;
-    border: 10px solid #343a40;
+    border: 15px solid #343a40;
     border-radius: 10px; 
 }
 
 .avatar-5 {
-    transform: translate(9em) translateY(-85px);
+    transform: translate(9em) translateY(-70px);
     position: absolute;
     width: 138px;
     height: 138px;
@@ -72,11 +72,11 @@
 }
 
 .avatar-6 {
-    transform: rotate(45deg) translate(10em) rotate(-45deg) translateX(-20px) translateY(-20px) ;
+    transform: rotate(315deg) translate(22em) rotate(-315deg) translateX(-155px);
     position: absolute;
     width: 138px;
     height: 138px;
     background: #343a40;
-    border: 15px solid #343a40;
+    border: 10px solid #343a40;
     border-radius: 10px; 
 }
