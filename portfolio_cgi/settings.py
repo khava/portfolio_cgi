@@ -40,12 +40,11 @@ INSTALLED_APPS = [
     'django_extensions',
     'channels',
     
+    'discussion.apps.DiscussionConfig',
     'accounts',
-    'discussion',
     'moderator',
 ]
 
-CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -97,23 +96,23 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'portfolio_cgi',
-        'USER': 'portfolio_cgi',
-        'PASSWORD': 'portfolio_cgi',
-        'HOST': 'portfolio-cgi.herokuapp.com',
-        'PORT': '5432',
-    }
-}
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'portfolio_cgi',
+#         'USER': 'portfolio_cgi',
+#         'PASSWORD': 'portfolio_cgi',
+#         'HOST': 'portfolio-cgi.herokuapp.com',
+#         'PORT': '5432',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 
 
 # Password validation
@@ -172,6 +171,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = 'grasagrant@gmail.com'
-EMAIL_HOST_PASSWORD = 'grasa123'
+EMAIL_HOST_USER = 'portfolio.cgi.online@gmail.com'
+EMAIL_HOST_PASSWORD = 'portfoliocgi123'
 EMAIL_PORT = 587

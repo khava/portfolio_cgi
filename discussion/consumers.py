@@ -33,14 +33,12 @@ def get_or_create_room(theme):
 class DiscussionConsumer(WebsocketConsumer):
 
     def connect(self):
-
+        
         self.theme = Theme.objects.filter(pk=self.scope['url_route']['kwargs']['theme_id']).first()
         self.room, self.room_name = get_or_create_room(self.theme)
 
         if self.scope['user'].is_anonymous or self.theme.author == self.scope['user']:
             self.close()
-
-            print('CONNECT CLOSE')
              
         else:
             self.room.save()
@@ -56,12 +54,8 @@ class DiscussionConsumer(WebsocketConsumer):
 
             self.accept()
             
-            print('CONNECT')
-
 
     def disconnect(self, close_code):
-
-        print('DISCONNECT')
 
         if self.room.comments.count() == 0 or self.room.roomuser_set.count() == 0:
             self.room.delete()
@@ -69,7 +63,6 @@ class DiscussionConsumer(WebsocketConsumer):
         user = get_object_or_404(User, username=self.scope['user'])
 
         if Comment.objects.filter(room=self.room, author=user).count() == 0:
-            print(Comment.objects.filter(room=self.room, author=user).count())
             self.room.roomuser_set.filter(user=user).delete()
 
         async_to_sync(self.channel_layer.group_discard)(
@@ -79,8 +72,6 @@ class DiscussionConsumer(WebsocketConsumer):
 
 
     def receive(self, text_data):
-        print('RECEIVE')
-
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
         color_value = text_data_json['colorValue']
@@ -98,7 +89,6 @@ class DiscussionConsumer(WebsocketConsumer):
                 room=self.room,
             )
 
-
         async_to_sync(self.channel_layer.group_send)(
             self.room_name,
             {
@@ -107,59 +97,17 @@ class DiscussionConsumer(WebsocketConsumer):
                 'user': str(self.scope['user']),
             }
         )
-
-
-    def discussion_message(self, event):
-        print('DISCUSSION_MESSAGE')
         
+
+    def discussion_message(self, event): 
+            
         self.send(text_data=json.dumps({
             'message': event['message'],
             'user': event['user'],
         }))
 
 
-
-# class RoomUsersDisplayConsumer(WebsocketConsumer):
-
-#     def connect(self):
-
-#         self.theme = Theme.objects.filter(pk=self.scope['url_route']['kwargs']['theme_id']).first()
-#         self.room, self.room_name = get_or_create_room(self.theme)
-
-#         async_to_sync(self.channel_layer.group_add)(
-#             self.room_name,
-#             self.channel_name
-#         )
-        
-#         self.accept()
-
-#         self.is_connected = True
-
-#         while self.is_connected:
-
-#             room_users = serializers.serialize('json', self.room.users.all())
-#             async_to_sync(self.channel_layer.group_send)(
-#                 self.room_name,
-#                 {
-#                     'type': 'send_room_users',
-#                     'room_users': room_users,
-#                 }
-#             )
-            
-#     def disconnect(self, close_code):
-
-#         self.is_connected = False
-#         print(False)
-
-#         async_to_sync(self.channel_layer.group_discard)(
-#             self.room_name,
-#             self.channel_name
-#         )
-
-#     def send_room_users(self, event):
-
-#         print(event)
-        
-#         self.send(text_data=json.dumps({
-#             'room_users': event['room_users'],
-#         }))
+    def send_room_users(self, event):
+        self.send(text_data=json.dumps({
+            'room_users': event['room_users'],
+        }))

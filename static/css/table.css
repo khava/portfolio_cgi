@@ -8,7 +8,7 @@
     margin: 1.50em auto 0;
 }
 
-.room-users div {
+.user-avatars div {
     display: block;
     position: absolute;
     top: 50%;
@@ -27,7 +27,7 @@
     width: 138px;
     height: 138px;
     background: #343a40; 
-    border: 15px solid #343a40;
+    border: 10px solid #343a40;
     border-radius: 10px; 
 }
 
@@ -37,7 +37,7 @@
     width: 138px;
     height: 138px;
     background: #343a40; 
-    border: 15px solid #343a40;
+    border: 10px solid #343a40;
     border-radius: 10px; 
 }
 
@@ -47,7 +47,7 @@
     width: 138px;
     height: 138px;
     background: #343a40; 
-    border: 15px solid #343a40;
+    border: 10px solid #343a40;
     border-radius: 10px; 
 }
 
@@ -57,7 +57,7 @@
     width: 138px;
     height: 138px;
     background: #343a40;
-    border: 15px solid #343a40;
+    border: 10px solid #343a40;
     border-radius: 10px; 
 }
 
@@ -67,7 +67,7 @@
     width: 138px;
     height: 138px;
     background: #343a40;
-    border: 15px solid #343a40;
+    border: 10px solid #343a40;
     border-radius: 10px; 
 }
 

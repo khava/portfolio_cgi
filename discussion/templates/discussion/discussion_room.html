@@ -8,72 +8,81 @@
     <div class="row">
         <div class="col-8">
             <div class="row room-users">
-
                 <img src ="{% static 'image/table.png' %}">
                 
-                {% if users.0 %}
-                    <div class="user-avatar avatar-1 col-3 m-1">                        
-                        <img class="card-img-top" src="{{ users.0.avatar.url }}" alt="User avatar">
-                        <h6 align="center" class="user-name">{{ users.0.username }}</h6>
-                    </div>
-                {% endif %}
+                <div class="user-avatars">
+                    {% if users.0 %}
+                        <div class="avatar-1 col-3 m-1">                        
+                            <img class="card-img-top" src="{{ users.0.avatar.url }}" alt="User avatar">
+                            <h6 align="center" class="user-name">{{ users.0.username }}</h6>
+                        </div>
+                    {% endif %}
 
-                {% if users.1 %}
-                    <div class="user-avatar avatar-2 col-3 m-1">                       
-                        <img class="card-img-top" src="{{ users.1.avatar.url }}" alt="User avatar">                        
-                        <h6 align="center" class="user-name">{{ users.1.username }}</h6>
-                    </div>
-                {% endif %}
+                    {% if users.1 %}
+                        <div class="avatar-2 col-3 m-1">                       
+                            <img class="card-img-top" src="{{ users.1.avatar.url }}" alt="User avatar">                        
+                            <h6 align="center" class="user-name">{{ users.1.username }}</h6>
+                        </div>
+                    {% endif %}
 
-                {% if users.2 %}
-                    <div class="user-avatar avatar-3 col-3 m-1">                        
-                        <img class="card-img-top" src="{{ users.2.avatar.url }}" alt="User avatar">                       
-                        <h6 align="center" class="user-name">{{ users.2.username }}</h6>
-                    </div>
-                {% endif %}
+                    {% if users.2 %}
+                        <div class="avatar-3 col-3 m-1">                        
+                            <img class="card-img-top" src="{{ users.2.avatar.url }}" alt="User avatar">                       
+                            <h6 align="center" class="user-name">{{ users.2.username }}</h6>
+                        </div>
+                    {% endif %}
 
-                {% if users.3 %}
-                    <div class="user-avatar avatar-4 col-3 m-1">                        
-                        <img class="card-img-top" src="{{ users.3.avatar.url }}" alt="User avatar">                       
-                        <h6 align="center" class="user-name">{{ users.3.username }}</h6>
-                    </div>
-                {% endif %}
+                    {% if users.3 %}
+                        <div class="avatar-4 col-3 m-1">                        
+                            <img class="card-img-top" src="{{ users.3.avatar.url }}" alt="User avatar">                       
+                            <h6 align="center" class="user-name">{{ users.3.username }}</h6>
+                        </div>
+                    {% endif %}
 
-                {% if users.4 %}
-                    <div class="user-avatar avatar-5 col-3 m-1">                       
-                        <img class="card-img-top" src="{{ users.4.avatar.url }}" alt="User avatar">                        
-                        <h6 align="center" class="user-name">{{ users.4.username }}</h6>
-                    </div>
-                {% endif %}
+                    {% if users.4 %}
+                        <div class="avatar-5 col-3 m-1">                       
+                            <img class="card-img-top" src="{{ users.4.avatar.url }}" alt="User avatar">                        
+                            <h6 align="center" class="user-name">{{ users.4.username }}</h6>
+                        </div>
+                    {% endif %}
 
-                {% if users.5 %}
-                    <div class="user-avatar avatar-6 col-3 m-1">                       
-                        <img class="card-img-top" src="{{ users.5.avatar.url }}" alt="User avatar">                      
-                        <h6 align="center" class="user-name">{{ users.5.username }}</h6>
-                    </div>
-                {% endif %}
-  
+                    {% if users.5 %}
+                        <div class="avatar-6 col-3 m-1">                       
+                            <img class="card-img-top" src="{{ users.5.avatar.url }}" alt="User avatar">                      
+                            <h6 align="center" class="user-name">{{ users.5.username }}</h6>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
 
         <div class="col-4 mt-5">
-            <div class="card">
-                <div class="card-header">
-                    Тема - {{ theme.theme }}
-                </div>
 
+            <div id="accordion">
+                <div class="card">
+                  <a class="theme-header btn-dark" data-toggle="collapse" data-target="#collapseTheme" aria-expanded="true" aria-controls="collapseTheme">
+                    {{ theme.theme }}
+                  </a>
+                  
+                  <div id="collapseTheme" class="collapse" aria-labelledby="headingTheme" data-parent="#accordion">
+                    <div class="card-body">
+                      {{ theme.description }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            
+            <div class="card">
                 <div class="chat-card card-body" id="all_messages">
                     <ul class="chat">
 
                         {% if request.user.is_authenticated %}
-                            <!-- Если user является автором темы, он не сможет оставлять комменты -->
                             {% if request.user != theme.author %}
                                 {% for comment in comments %}
                                     {% if comment.author == user %}
                                         <li>
                                             <div class="chat-body">
                                                 <p class="text-right"><strong>{{ comment.author }}</strong></p>
-                                                <!-- <small class="text-muted">{{ comment.created_date }}</small> -->
                                                 <p class="text-right">{{ comment.comment }}</p>
                                             </div>
                                         </li>
@@ -81,7 +90,6 @@
                                         <li>
                                             <div class="chat-body">
                                                 <p class="text-left"><strong>{{ comment.author }}</strong></p>
-                                                <!-- <small class="text-muted">{{ comment.created_date }}</small> -->
                                                 <p class="text-left">{{ comment.comment }}</p>
                                             </div>
                                         </li>
@@ -113,7 +121,6 @@
 {{ theme.pk|json_script:"theme_id" }}
 <script>
     
-
     $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
     const themeID = JSON.parse(document.getElementById('theme_id').textContent);
     const ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
@@ -125,17 +132,43 @@
         const receive_user = data['user'];
         const user = '{{ user }}';
 
-        if (receive_user === user) {
-            // document.querySelector('.chat').innerHTML += '<li><div class="chat-body"><p class="text-right"><strong>'+user+'</strong></p><p class="text-right">'+message+'</p></div></li>';
-            $('<li><div class="chat-body"><p class="text-right"><strong>' + user + '</strong></p><p class="text-right">' + message + '</p></div></li>').appendTo($('.chat'))
+        if (!!message && !!receive_user) {
+            if (receive_user === user) {
+                $('<li><div class="chat-body"><p class="text-right"><strong>' + user + '</strong></p><p class="text-right">' + message + '</p></div></li>').appendTo($('.chat'))
+            }
+            else {
+                $('<li><div class="chat-body"><p class="text-left"><strong>' + receive_user + '</strong></p><p class="text-left">' + message + '</p></div></li>').appendTo($('.chat'))
+            };
         }
-        else {
-            // document.querySelector('.chat').innerHTML += '<li><div class="chat-body"><p class="text-left"><strong>'+receive_user+'</strong></p><p class="text-left">'+message+'</p></div></li>';
-            $('<li><div class="chat-body"><p class="text-left"><strong>' + receive_user + '</strong></p><p class="text-left">' + message + '</p></div></li>').appendTo($('.chat'))
-        };
+        
         $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
-    };
 
+        if (data['room_users']) {
+            // const currentRoomUsers = document.querySelectorAll(".room-users .user-avatar")
+            const newRoomUsers = JSON.parse(data['room_users'])
+            // const differenceNew = newRoomUsers.filter(user => !currentRoomUsers.includes(user));
+            // const differenceCurrent = currentRoomUsers.filter(user => !newRoomUsers.includes(user));
+
+            let roomUserHtml = ''
+            for (let i in newRoomUsers) {
+                roomUserHtml = roomUserHtml + 
+                '<div class="user-avatar avatar-' + (parseInt(i) + 1) + ' col-3 m-1" > \
+                    <img class="card-img-top" src="/media/' + newRoomUsers[i].fields.avatar + '" alt="User avatar"> \
+                    <h6 align="center" class="user-name">' + newRoomUsers[i].fields.username + '</h6> \
+                </div>';
+            }
+
+            $('.user-avatars').html($(roomUserHtml));
+
+            if (newRoomUsers.length === 6) {
+                setTimeout(() => {
+                    changeColor();
+                    discussionTimeIntervalId = setInterval(changeColor, discussionTimeOneUser);
+                }, 2000);
+            }
+        }
+    }
+    
     chatSocket.onclose = function (e) {
         console.error('Chat socket closed unexpectedly');
     };
@@ -149,10 +182,9 @@
 
     document.querySelector('#chat-message-submit').onclick = function (e) {
         const messageInput = document.querySelector('#chat-message-input');
-        const meаssage = messageInput.value;
+        const message = messageInput.value;
 
         let colorValue;
-        // let roomUsersAvatar = document.getElementsByClassName("room-users")[0].children;
         let roomUsersAvatar = document.querySelectorAll(".room-users .user-avatar")
         
         for (let i = 0; i < roomUsersAvatar.length; i++) {
@@ -172,84 +204,35 @@
         } else {
             messageInput.value = '';
             alert('Недостаточно участников');
-            
         }
     };
 
+
     let discussionTimeIntervalId;
-    let colorFlag = false;
-
-    // Ajax запрос для получения новых пользователей
-    function getRoomUsers() {
-        // let roomUsersCount = document.getElementsByClassName("room-users")[0].childElementCount;
-        let roomUsersCount = document.querySelectorAll(".room-users .user-avatar").length;
-        let last_user_name = $('.room-users .user-avatar').last().text().trim();
-
-        $.ajax({
-            type: 'GET',
-            dataType: 'JSON',
-            url: "{% url 'discussion' theme_id=0 %}".replace('0', themeID),
-            data: {
-                last_user_name: last_user_name,
-            },
-            success: function (data) {
-                for (let user of data) {
-
-                    // let roomUsers = document.getElementsByClassName("room-users")[0].children;
-                    
-                    let roomUsers = document.querySelectorAll(".room-users .user-avatar")
-                    let className = roomUsers[roomUsers.length - 1].className.split(' ')[1]
-                    let number = parseInt(className.split('-')[1], 10) + 1
-                    
-                    userAvatar =
-                        '<div class="user-avatar avatar-' + number + ' col-3 m-1" > \
-                            <img class="card-img-top" src="' + user.avatar + '" alt="User avatar"> \
-                            <h6 align="center" class="user-name">' + user.username + '</h6> \
-                        </div>';
-
-                    $(userAvatar).appendTo($('.room-users'));
-                }
-
-                if (roomUsersCount < 6) {
-                    if (chatSocket.readyState === WebSocket.OPEN || chatSocket.readyState === chatSocket.CONNECTING) {
-                        setTimeout(getRoomUsers, 1000);
-                    }
-                }
-                else {
-                    colorFlag = true;
-                }
-            },
-            complete: function () {
-                if (colorFlag === true) {
-                    setTimeout(() => {
-                        changeColor();
-                        discussionTimeIntervalId = setInterval(changeColor, discussionTimeOneUser);
-                    }, 2000);
-
-                }
-            }
-        })
-    };
-
-    if (chatSocket.readyState === WebSocket.OPEN || chatSocket.readyState === chatSocket.CONNECTING) {
-        getRoomUsers();
-    }
-
-    let discussionTime = 60000; //18000000; // 30 minutes (time in milliseconds)
-    let discussionTimeOneUser = 10000; //300000; // 5 minutes (time in milliseconds)
+    let discussionTime = 30000; //18000000; // 30 minutes (time in milliseconds)
+    let discussionTimeOneUser = 5000; //300000; // 5 minutes (time in milliseconds)
     let userColors = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
 
     function changeColor() {
-        // let roomUsersAvatar = document.getElementsByClassName("room-users")[0].children;
-        let roomUsersAvatar = document.querySelectorAll(".room-users .user-avatar")
+        let roomUsersAvatar = document.getElementsByClassName('user-avatars')[0].children;
         for (let i = 0; i < roomUsersAvatar.length; i++) {
             roomUsersAvatar[i].style.border = `10px solid ${userColors[i]}`;
             roomUsersAvatar[i].style.background = userColors[i];
         }
         
         userColors.unshift(userColors.pop());
-
         discussionTime = discussionTime - discussionTimeOneUser;
+
+        if (roomUsersAvatar.length < 6) {
+            clearInterval(discussionTimeIntervalId);
+
+            for (let i = 0; i < roomUsersAvatar.length; i++) {
+                roomUsersAvatar[i].style.border = '10px solid #343a40';
+                roomUsersAvatar[i].style.background = '#343a40';
+            }
+            chatSocket.onclose();
+            alert('Недостаточно участников для продолжения!');
+        }
         if (discussionTime === 0) {
 
             clearInterval(discussionTimeIntervalId);
@@ -261,19 +244,94 @@
     };
 
 
-    // const roomUsersSocket = new WebSocket(ws_scheme + '://' + window.location.host + '/ws/discussion/' + themeID + '/room_users/');
-    // roomUsersSocket.onmessage = function(e){
-    // console.log("message", e);
+    // let discussionTimeIntervalId;
+    // let colorFlag = false;
+
+    // // Ajax запрос для получения новых пользователей
+    // function getRoomUsers() {
+    //     // let roomUsersCount = document.querySelectorAll(".room-users .user-avatar").length;
+    //     let roomUsersCount = document.getElementsByClassName('user-avatars')[0].childElementCount;
+    //     // let last_user_name = $('.room-users .user-avatar').last().text().trim();
+    //     let last_user_name = document.getElementsByClassName('user-avatars')[0].lastElementChild.textContent.trim();
+
+    //     $.ajax({
+    //         type: 'GET',
+    //         dataType: 'JSON',
+    //         url: "{% url 'discussion' theme_id=0 %}".replace('0', themeID),
+    //         data: {
+    //             last_user_name: last_user_name,
+    //         },
+    //         success: function (data) {
+    //             for (let user of data) {
+
+    //                 // let roomUsers = document.querySelectorAll(".room-users .user-avatar")
+    //                 // let className = roomUsers[roomUsers.length - 1].className.split(' ')[1]
+    //                 // let number = parseInt(className.split('-')[1], 10) + 1
+    //                 let roomUsers = document.getElementsByClassName('user-avatars')[0].children;
+    //                 let className = roomUsers[roomUsers.length - 1].className.split(' ')[0];
+    //                 let number = parseInt(className.split('-')[1], 10) + 1
+                    
+    //                 userAvatar =
+    //                     '<div class="avatar-' + number + ' col-3 m-1" > \
+    //                         <img class="card-img-top" src="' + user.avatar + '" alt="User avatar"> \
+    //                         <h6 align="center" class="user-name">' + user.username + '</h6> \
+    //                     </div>';
+
+    //                 console.log(userAvatar)
+
+    //                 $(userAvatar).appendTo($('.user-avatars'));
+    //             }
+
+    //             if (roomUsersCount < 6) {
+    //                 if (chatSocket.readyState === WebSocket.OPEN || chatSocket.readyState === chatSocket.CONNECTING) {
+    //                     setTimeout(getRoomUsers, 1000);
+    //                 }
+    //             }
+    //             else {
+    //                 colorFlag = true;
+    //             }
+    //         },
+    //         complete: function () {
+    //             if (colorFlag === true) {
+    //                 setTimeout(() => {
+    //                     changeColor();
+    //                     discussionTimeIntervalId = setInterval(changeColor, discussionTimeOneUser);
+    //                 }, 2000);
+
+    //             }
+    //         }
+    //     })
     // };
-    // roomUsersSocket.onopen = function(e){
-    //     console.log("open", e);
+
+    // if (chatSocket.readyState === WebSocket.OPEN || chatSocket.readyState === chatSocket.CONNECTING) {
+    //     getRoomUsers();
+    // }
+
+    // let discussionTime = 60000; //18000000; // 30 minutes (time in milliseconds)
+    // let discussionTimeOneUser = 10000; //300000; // 5 minutes (time in milliseconds)
+    // let userColors = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
+
+    // function changeColor() {
+    //     // let roomUsersAvatar = document.querySelectorAll(".room-users .user-avatar")
+    //     let roomUsersAvatar = document.getElementsByClassName('user-avatars')[0].children;
+    //     for (let i = 0; i < roomUsersAvatar.length; i++) {
+    //         roomUsersAvatar[i].style.border = `10px solid ${userColors[i]}`;
+    //         roomUsersAvatar[i].style.background = userColors[i];
+    //     }
+        
+    //     userColors.unshift(userColors.pop());
+
+    //     discussionTime = discussionTime - discussionTimeOneUser;
+    //     if (discussionTime === 0) {
+
+    //         clearInterval(discussionTimeIntervalId);
+    //         setTimeout(() => {
+    //             chatSocket.onclose();
+    //             alert('Обсуждение завершено!');
+    //         }, discussionTimeOneUser);
+    //     }
     // };
-    // roomUsersSocket.onerror = function(e){
-    //     console.log("error", e)
-    // };
-    // roomUsersSocket.onclose = function(e){
-    //     console.log("close", e)
-    // };
+
 
 </script>
 {% endblock %}

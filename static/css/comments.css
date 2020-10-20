@@ -3,3 +3,14 @@
     height: 250px;
     width: 22rem;
 }
+
+.theme-header {
+    display: block;
+    background-color: #343a40;
+    border-radius: 5px;
+    padding: 10px;
+    font-weight: 400;
+    user-select: none;
+    text-decoration: none !important;
+    padding-left: 20px;
+}
