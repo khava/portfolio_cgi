@@ -126,6 +126,15 @@
     const ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
     const chatSocket = new WebSocket(ws_scheme + '://' + window.location.host + '/ws/discussion/' + themeID + '/');
 
+    let discussionTimeIntervalId;
+    let botTimeIntervalId;
+    let botGetTimeoutId;
+    let discussionTime = 30000; //18000000; // 30 minutes
+    let discussionTimeOneUser = 5000; //300000; // 5 minutes
+    let botAddTime = 3000; //420000; // 7 minutes
+    let maxNumberParticipants = 6;
+    let userColors = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
+
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
         const message = data['message'];
@@ -135,19 +144,15 @@
         if (!!message && !!receive_user) {
             if (receive_user === user) {
                 $('<li><div class="chat-body"><p class="text-right"><strong>' + user + '</strong></p><p class="text-right">' + message + '</p></div></li>').appendTo($('.chat'))
-            }
-            else {
+            } else {
                 $('<li><div class="chat-body"><p class="text-left"><strong>' + receive_user + '</strong></p><p class="text-left">' + message + '</p></div></li>').appendTo($('.chat'))
             };
         }
         
         $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
-
+  
         if (data['room_users']) {
-            // const currentRoomUsers = document.querySelectorAll(".room-users .user-avatar")
             const newRoomUsers = JSON.parse(data['room_users'])
-            // const differenceNew = newRoomUsers.filter(user => !currentRoomUsers.includes(user));
-            // const differenceCurrent = currentRoomUsers.filter(user => !newRoomUsers.includes(user));
 
             let roomUserHtml = ''
             for (let i in newRoomUsers) {
@@ -158,17 +163,72 @@
                 </div>';
             }
 
-            $('.user-avatars').html($(roomUserHtml));
+            if (newRoomUsers.length === 4) { 
+                botGetTimeoutId = setTimeout(() => {
+                    chatSocket.send(JSON.stringify({
+                        'bot': true,
+                    }))        
+                }, botAddTime);
+            }
 
-            if (newRoomUsers.length === 6) {
+            if (newRoomUsers.length !== 4) {
+                clearTimeout(botGetTimeoutId);
+            }
+
+            roomBots = JSON.parse(data['bots'])
+            
+            if (roomBots) {                
+                for (let i in roomBots) {
+                    roomUserHtml = roomUserHtml +
+                    '<div class="user-avatar avatar-' + (parseInt(i) + 5) + ' col-3 m-1" > \
+                        <img class="card-img-top" src="/media/' + roomBots[i].fields.avatar + '" alt="User avatar"> \
+                        <h6 align="center" class="user-name">' + roomBots[i].fields.name + '</h6> \
+                    </div>';
+                }
+            }   
+
+            $('.user-avatars').html($(roomUserHtml));  
+
+            if (newRoomUsers.length === maxNumberParticipants || newRoomUsers.length + roomBots.length === maxNumberParticipants) {
                 setTimeout(() => {
                     changeColor();
                     discussionTimeIntervalId = setInterval(changeColor, discussionTimeOneUser);
+                    getBotComment();
                 }, 2000);
             }
         }
+
+        if (data['bot_name']) {
+            let botName = data['bot_name'];
+            let botComment = data['bot_comment'];
+            
+            $('<li><div class="chat-body"><p class="text-left"><strong>' + botName + '</strong></p><p class="text-left">' + botComment + '</p></div></li>').appendTo($('.chat'))
+            $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
+        }
     }
-    
+
+    function getBotComment() {
+        let timeGetBotComment = Math.floor(Math.random() * (10000 - 5000)) + 5000;
+        botTimeIntervalId = setInterval(() => {
+            let roomUsersAvatar = document.getElementsByClassName('user-avatars')[0].children;
+            timeGetBotComment = Math.floor(Math.random() * (10000 - 5000)) + 5000;
+            let botName = `bot_${Math.floor(Math.random() * (3 - 1)) + 1}`
+            let botIndex;
+            for (let i = 0; i < roomUsersAvatar.length; i++) {
+                if (roomUsersAvatar[i].innerText === botName) {
+                    botIndex = i;
+                }
+            }
+
+            chatSocket.send(JSON.stringify({
+                'botComment': true,
+                'botName': botName,
+                'botColor': roomUsersAvatar[botIndex].style.borderColor
+            }));
+
+        }, timeGetBotComment);
+    }
+
     chatSocket.onclose = function (e) {
         console.error('Chat socket closed unexpectedly');
     };
@@ -192,8 +252,8 @@
                 colorValue = roomUsersAvatar[i].style.borderColor;
             }
         }
-
-        if (roomUsersAvatar.length === 6){
+        
+        if (roomUsersAvatar.length === maxNumberParticipants) {
             chatSocket.send(JSON.stringify({
                 'message': message,
                 'colorValue': colorValue,
@@ -208,11 +268,6 @@
     };
 
 
-    let discussionTimeIntervalId;
-    let discussionTime = 30000; //18000000; // 30 minutes (time in milliseconds)
-    let discussionTimeOneUser = 5000; //300000; // 5 minutes (time in milliseconds)
-    let userColors = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
-
     function changeColor() {
         let roomUsersAvatar = document.getElementsByClassName('user-avatars')[0].children;
         for (let i = 0; i < roomUsersAvatar.length; i++) {
@@ -223,8 +278,9 @@
         userColors.unshift(userColors.pop());
         discussionTime = discussionTime - discussionTimeOneUser;
 
-        if (roomUsersAvatar.length < 6) {
+        if (roomUsersAvatar.length < maxNumberParticipants) {
             clearInterval(discussionTimeIntervalId);
+            clearInterval(botTimeIntervalId);
 
             for (let i = 0; i < roomUsersAvatar.length; i++) {
                 roomUsersAvatar[i].style.border = '10px solid #343a40';
@@ -236,102 +292,17 @@
         if (discussionTime === 0) {
 
             clearInterval(discussionTimeIntervalId);
+            clearInterval(botTimeIntervalId);
             setTimeout(() => {
                 chatSocket.onclose();
+                for (let i = 0; i < roomUsersAvatar.length; i++) {
+                    roomUsersAvatar[i].style.border = '10px solid #343a40';
+                    roomUsersAvatar[i].style.background = '#343a40';
+                }
                 alert('Обсуждение завершено!');
             }, discussionTimeOneUser);
         }
     };
-
-
-    // let discussionTimeIntervalId;
-    // let colorFlag = false;
-
-    // // Ajax запрос для получения новых пользователей
-    // function getRoomUsers() {
-    //     // let roomUsersCount = document.querySelectorAll(".room-users .user-avatar").length;
-    //     let roomUsersCount = document.getElementsByClassName('user-avatars')[0].childElementCount;
-    //     // let last_user_name = $('.room-users .user-avatar').last().text().trim();
-    //     let last_user_name = document.getElementsByClassName('user-avatars')[0].lastElementChild.textContent.trim();
-
-    //     $.ajax({
-    //         type: 'GET',
-    //         dataType: 'JSON',
-    //         url: "{% url 'discussion' theme_id=0 %}".replace('0', themeID),
-    //         data: {
-    //             last_user_name: last_user_name,
-    //         },
-    //         success: function (data) {
-    //             for (let user of data) {
-
-    //                 // let roomUsers = document.querySelectorAll(".room-users .user-avatar")
-    //                 // let className = roomUsers[roomUsers.length - 1].className.split(' ')[1]
-    //                 // let number = parseInt(className.split('-')[1], 10) + 1
-    //                 let roomUsers = document.getElementsByClassName('user-avatars')[0].children;
-    //                 let className = roomUsers[roomUsers.length - 1].className.split(' ')[0];
-    //                 let number = parseInt(className.split('-')[1], 10) + 1
-                    
-    //                 userAvatar =
-    //                     '<div class="avatar-' + number + ' col-3 m-1" > \
-    //                         <img class="card-img-top" src="' + user.avatar + '" alt="User avatar"> \
-    //                         <h6 align="center" class="user-name">' + user.username + '</h6> \
-    //                     </div>';
-
-    //                 console.log(userAvatar)
-
-    //                 $(userAvatar).appendTo($('.user-avatars'));
-    //             }
-
-    //             if (roomUsersCount < 6) {
-    //                 if (chatSocket.readyState === WebSocket.OPEN || chatSocket.readyState === chatSocket.CONNECTING) {
-    //                     setTimeout(getRoomUsers, 1000);
-    //                 }
-    //             }
-    //             else {
-    //                 colorFlag = true;
-    //             }
-    //         },
-    //         complete: function () {
-    //             if (colorFlag === true) {
-    //                 setTimeout(() => {
-    //                     changeColor();
-    //                     discussionTimeIntervalId = setInterval(changeColor, discussionTimeOneUser);
-    //                 }, 2000);
-
-    //             }
-    //         }
-    //     })
-    // };
-
-    // if (chatSocket.readyState === WebSocket.OPEN || chatSocket.readyState === chatSocket.CONNECTING) {
-    //     getRoomUsers();
-    // }
-
-    // let discussionTime = 60000; //18000000; // 30 minutes (time in milliseconds)
-    // let discussionTimeOneUser = 10000; //300000; // 5 minutes (time in milliseconds)
-    // let userColors = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
-
-    // function changeColor() {
-    //     // let roomUsersAvatar = document.querySelectorAll(".room-users .user-avatar")
-    //     let roomUsersAvatar = document.getElementsByClassName('user-avatars')[0].children;
-    //     for (let i = 0; i < roomUsersAvatar.length; i++) {
-    //         roomUsersAvatar[i].style.border = `10px solid ${userColors[i]}`;
-    //         roomUsersAvatar[i].style.background = userColors[i];
-    //     }
-        
-    //     userColors.unshift(userColors.pop());
-
-    //     discussionTime = discussionTime - discussionTimeOneUser;
-    //     if (discussionTime === 0) {
-
-    //         clearInterval(discussionTimeIntervalId);
-    //         setTimeout(() => {
-    //             chatSocket.onclose();
-    //             alert('Обсуждение завершено!');
-    //         }, discussionTimeOneUser);
-    //     }
-    // };
-
 
 </script>
 {% endblock %}

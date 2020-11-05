@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from discussion.models import Comment, Room, RoomUser, Theme
+from discussion.models import BotComment, Bot, Comment, Room, RoomUser, RoomBot, Theme
 
 
 @admin.register(Theme)
@@ -15,9 +15,25 @@ class RoomAdmin(admin.ModelAdmin):
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ('comment', 'color', 'theme', 'author', 'created_date',)
+    list_display = ('comment', 'color', 'theme', 'author', 'created_date', )
 
 
 @admin.register(RoomUser)
 class RoomUserAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(RoomBot)
+class RoomUserAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Bot)
+class BotAdmin(admin.ModelAdmin):
+    list_display = ('name', )
+
+
+
+@admin.register(BotComment)
+class BotCommentAdmin(admin.ModelAdmin):
+    list_display = ('comment', 'color', 'bot', 'created_date', )
