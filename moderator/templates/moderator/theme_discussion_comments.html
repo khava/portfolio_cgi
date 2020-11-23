@@ -10,12 +10,12 @@
                 <div class="row">
 
                     <div class="comments-card card text-white bg-primary mb-3 mr-3">
-                        <div class="card-header">Blue</div>
+                        <div class="card-header">Управление</div>
                         <div class="card-body">
 
                             {% if blue %}
                                 {% for comment in blue %}
-                                    <p class="card-text">{{ comment }} - <a href="{% url 'user_account' username=comment.author %}">{{ comment.author}}</a></p>
+                                    <p class="card-text">{{ comment }} - <a style="color: black;" href="{% url 'user_account' username=comment.author %}" style="color: white">{{ comment.author}}</a>
                                 {% endfor %}
                             {% else %}
                                 <p class="card-text">Комментариев нет</p>
@@ -25,12 +25,12 @@
                     </div>
                     
                     <div class="comments-card card text-white bg-success mb-3 mr-3">
-                        <div class="card-header">Green</div>
+                        <div class="card-header">Креативность</div>
                         <div class="card-body">
 
                             {% if green %}
                                 {% for comment in green %}
-                                    <p class="card-text">{{ comment }} - <a href="{% url 'user_account' username=comment.author %}">{{ comment.author}}</a></p>
+                                    <p class="card-text">{{ comment }} - <a style="color: black;" href="{% url 'user_account' username=comment.author %}">{{ comment.author}}</a></p>
                                 {% endfor %}
                             {% else %}
                                 <p class="card-text">Комментариев нет</p>
@@ -40,12 +40,12 @@
                     </div>
         
                     <div class="comments-card card text-white bg-danger mb-3 mr-3">
-                        <div class="card-header">Red</div>
+                        <div class="card-header">Эмоции и Чувства</div>
                         <div class="card-body">
                             
                             {% if red %}
                                 {% for comment in red %}
-                                    <p class="card-text">{{ comment }} - <a href="{% url 'user_account' username=comment.author %}">{{ comment.author}}</a></p>
+                                    <p class="card-text">{{ comment }} - <a style="color: black;" href="{% url 'user_account' username=comment.author %}">{{ comment.author}}</a></p>
                                 {% endfor %}
                             {% else %}
                                 <p class="card-text">Комментариев нет</p>
@@ -55,12 +55,12 @@
                     </div>
         
                     <div class="comments-card card text-white bg-warning mb-3 mr-3">
-                        <div class="card-header">Yellow</div>
+                        <div class="card-header">Оптимистичность</div>
                         <div class="card-body">
                             
                             {% if yellow %}
                                 {% for comment in yellow %}
-                                    <p class="card-text">{{ comment }} - <a href="{% url 'user_account' username=comment.author %}">{{ comment.author}}</a></p>
+                                    <p class="card-text">{{ comment }} - <a style="color: black;" href="{% url 'user_account' username=comment.author %}">{{ comment.author}}</a></p>
                                 {% endfor %}
                             {% else %}
                                 <p class="card-text">Комментариев нет</p>
@@ -70,12 +70,12 @@
                     </div>
                     
                     <div class="comments-card card bg-light mb-3 mr-3">
-                        <div class="card-header">White</div>
+                        <div class="card-header">Информация и факты</div>
                         <div class="card-body">
                             
                             {% if white %}
                                 {% for comment in white %}
-                                    <p class="card-text">{{ comment }} - <a href="{% url 'user_account' username=comment.author %}">{{ comment.author}}</a></p>
+                                    <p class="card-text">{{ comment }} - <a style="color: black;" href="{% url 'user_account' username=comment.author %}">{{ comment.author}}</a></p>
                                 {% endfor %}
                             {% else %}
                                 <p class="card-text">Комментариев нет</p>
@@ -85,12 +85,12 @@
                     </div>
         
                     <div class="comments-card card text-white bg-dark mb-3 mr-3">
-                        <div class="card-header">Black</div>
+                        <div class="card-header">Критическое суждение</div>
                         <div class="card-body">
                             
                             {% if black %}
                                 {% for comment in black %}
-                                    <p class="card-text">{{ comment }} - <a href="{% url 'user_account' username=comment.author %}">{{ comment.author}}</a></p>
+                                    <p class="card-text">{{ comment }} - <a style="color: black;" href="{% url 'user_account' username=comment.author %}">{{ comment.author}}</a></p>
                                 {% endfor %}
                             {% else %}
                                 <p class="card-text">Комментариев нет</p>

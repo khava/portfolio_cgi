@@ -7,4 +7,4 @@ class CreateThemeForm(forms.ModelForm):
     
     class Meta:
         model = Theme
-        fields = ('theme', 'description')
+        fields = ('theme', 'problem', 'decision')

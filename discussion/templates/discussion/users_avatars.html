@@ -1,0 +1,43 @@
+<div class="user-avatars">
+    {% if users.0 %}
+        <div class="avatar-1 col-3 m-1">                        
+            <img class="card-img-top" src="{{ users.0.avatar.url }}" alt="User avatar">
+            <h6 align="center" class="user-name">{{ users.0.username }}</h6>
+        </div>
+    {% endif %}
+
+    {% if users.1 %}
+        <div class="avatar-2 col-3 m-1">                       
+            <img class="card-img-top" src="{{ users.1.avatar.url }}" alt="User avatar">                        
+            <h6 align="center" class="user-name">{{ users.1.username }}</h6>
+        </div>
+    {% endif %}
+
+    {% if users.2 %}
+        <div class="avatar-3 col-3 m-1">                        
+            <img class="card-img-top" src="{{ users.2.avatar.url }}" alt="User avatar">                       
+            <h6 align="center" class="user-name">{{ users.2.username }}</h6>
+        </div>
+    {% endif %}
+
+    {% if users.3 %}
+        <div class="avatar-4 col-3 m-1">                        
+            <img class="card-img-top" src="{{ users.3.avatar.url }}" alt="User avatar">                       
+            <h6 align="center" class="user-name">{{ users.3.username }}</h6>
+        </div>
+    {% endif %}
+
+    {% if users.4 %}
+        <div class="avatar-5 col-3 m-1">                       
+            <img class="card-img-top" src="{{ users.4.avatar.url }}" alt="User avatar">                        
+            <h6 align="center" class="user-name">{{ users.4.username }}</h6>
+        </div>
+    {% endif %}
+
+    {% if users.5 %}
+        <div class="avatar-6 col-3 m-1">                       
+            <img class="card-img-top" src="{{ users.5.avatar.url }}" alt="User avatar">                      
+            <h6 align="center" class="user-name">{{ users.5.username }}</h6>
+        </div>
+    {% endif %}
+</div>

@@ -30,3 +30,19 @@
     overflow-y: scroll;
     height: 250px;
 }
+
+.accordion .theme-header:before {
+    font-family: Font Awesome\ 5 Free;
+    font-weight:900;
+    content:"\f068";
+    padding-right: 10px;
+}
+.accordion .theme-header.collapsed:before {
+    content:"\f067";
+}
+
+.timer {
+    font-weight: 1000;
+    font-size: x-large;
+    color: #343a40;
+}

@@ -9,64 +9,27 @@
         <div class="col-8">
             <div class="row room-users">
                 <img src ="{% static 'image/table.png' %}">
-                
-                <div class="user-avatars">
-                    {% if users.0 %}
-                        <div class="avatar-1 col-3 m-1">                        
-                            <img class="card-img-top" src="{{ users.0.avatar.url }}" alt="User avatar">
-                            <h6 align="center" class="user-name">{{ users.0.username }}</h6>
-                        </div>
-                    {% endif %}
-
-                    {% if users.1 %}
-                        <div class="avatar-2 col-3 m-1">                       
-                            <img class="card-img-top" src="{{ users.1.avatar.url }}" alt="User avatar">                        
-                            <h6 align="center" class="user-name">{{ users.1.username }}</h6>
-                        </div>
-                    {% endif %}
-
-                    {% if users.2 %}
-                        <div class="avatar-3 col-3 m-1">                        
-                            <img class="card-img-top" src="{{ users.2.avatar.url }}" alt="User avatar">                       
-                            <h6 align="center" class="user-name">{{ users.2.username }}</h6>
-                        </div>
-                    {% endif %}
-
-                    {% if users.3 %}
-                        <div class="avatar-4 col-3 m-1">                        
-                            <img class="card-img-top" src="{{ users.3.avatar.url }}" alt="User avatar">                       
-                            <h6 align="center" class="user-name">{{ users.3.username }}</h6>
-                        </div>
-                    {% endif %}
-
-                    {% if users.4 %}
-                        <div class="avatar-5 col-3 m-1">                       
-                            <img class="card-img-top" src="{{ users.4.avatar.url }}" alt="User avatar">                        
-                            <h6 align="center" class="user-name">{{ users.4.username }}</h6>
-                        </div>
-                    {% endif %}
-
-                    {% if users.5 %}
-                        <div class="avatar-6 col-3 m-1">                       
-                            <img class="card-img-top" src="{{ users.5.avatar.url }}" alt="User avatar">                      
-                            <h6 align="center" class="user-name">{{ users.5.username }}</h6>
-                        </div>
-                    {% endif %}
-                </div>
+                {% include 'discussion/users_avatars.html' %}
             </div>
         </div>
 
         <div class="col-4 mt-5">
 
-            <div id="accordion">
+            <p class="timer">00:30:00</p>
+
+            <div id="accordion"  class="accordion">
                 <div class="card">
-                  <a class="theme-header btn-dark" data-toggle="collapse" data-target="#collapseTheme" aria-expanded="true" aria-controls="collapseTheme">
+                  <a class="theme-header collapsed btn-dark" data-toggle="collapse" data-target="#collapseTheme" aria-expanded="true" aria-controls="collapseTheme">
                     {{ theme.theme }}
                   </a>
                   
                   <div id="collapseTheme" class="collapse" aria-labelledby="headingTheme" data-parent="#accordion">
                     <div class="card-body">
-                      {{ theme.description }}
+                        <strong>Проблема: </strong>
+                        {{ theme.problem }}
+                        <br>
+                        <strong>Решение: </strong>
+                        {{ theme.decision }}
                     </div>
                   </div>
                 </div>
@@ -129,11 +92,12 @@
     let discussionTimeIntervalId;
     let botTimeIntervalId;
     let botGetTimeoutId;
-    let discussionTime = 30000; //18000000; // 30 minutes
-    let discussionTimeOneUser = 5000; //300000; // 5 minutes
-    let botAddTime = 3000; //420000; // 7 minutes
+    let discussionTime = 360000 //18000000; // 30 minutes
+    let discussionTimeOneUser = 60000 //300000; // 5 minutes
+    let botAddTime =  5000; //420000; // 7 minutes
     let maxNumberParticipants = 6;
     let userColors = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
+    // let colorDescription = ['Управление', 'Информация и факты', 'Эмоции и Чувства', 'Критическое суждение', 'Оптимистичность', 'Креативность'];
 
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
@@ -192,6 +156,7 @@
             if (newRoomUsers.length === maxNumberParticipants || newRoomUsers.length + roomBots.length === maxNumberParticipants) {
                 setTimeout(() => {
                     changeColor();
+                    startTimer();
                     discussionTimeIntervalId = setInterval(changeColor, discussionTimeOneUser);
                     getBotComment();
                 }, 2000);
@@ -208,10 +173,10 @@
     }
 
     function getBotComment() {
-        let timeGetBotComment = Math.floor(Math.random() * (10000 - 5000)) + 5000;
+        let timeGetBotComment = Math.floor(Math.random() * (180000 - 10000)) + 10000; // от 10 секунд до 3 минут
         botTimeIntervalId = setInterval(() => {
             let roomUsersAvatar = document.getElementsByClassName('user-avatars')[0].children;
-            timeGetBotComment = Math.floor(Math.random() * (10000 - 5000)) + 5000;
+            timeGetBotComment = Math.floor(Math.random() * (180000 - 10000)) + 10000;
             let botName = `bot_${Math.floor(Math.random() * (3 - 1)) + 1}`
             let botIndex;
             for (let i = 0; i < roomUsersAvatar.length; i++) {
@@ -300,9 +265,32 @@
                     roomUsersAvatar[i].style.background = '#343a40';
                 }
                 alert('Обсуждение завершено!');
+                window.location.replace(`${window.location.protocol}//${window.location.host}`);
             }, discussionTimeOneUser);
         }
     };
+
+    let duration_timer = 1800; // 30 minutes
+    let timerElement = document.querySelector('.timer')
+
+    function startTimer() {
+      
+        let timer = duration_timer, minutes, seconds;
+        
+        timerIntervalId = setInterval(function() {
+            minutes = parseInt(timer / 60, 10)
+            seconds = parseInt(timer % 60, 10);
+
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            timerElement.textContent = `00:${minutes}:${seconds}`;
+            if (--timer < 0) {
+                clearInterval(timerIntervalId);
+            }
+
+        }, 1000);
+    }
 
 </script>
 {% endblock %}

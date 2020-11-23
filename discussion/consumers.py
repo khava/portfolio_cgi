@@ -2,6 +2,7 @@ import json
 import random
 
 from asgiref.sync import async_to_sync
+from channels import consumer
 from channels.generic.websocket import WebsocketConsumer
 from django.core import serializers
 from django.shortcuts import get_object_or_404
@@ -59,6 +60,8 @@ class DiscussionConsumer(WebsocketConsumer):
 
     def disconnect(self, close_code):
 
+        # self.room.bots.clear()
+
         if self.room.comments.count() == 0 or self.room.roomuser_set.count() == 0:
             self.room.delete()
 
@@ -66,8 +69,6 @@ class DiscussionConsumer(WebsocketConsumer):
 
         if Comment.objects.filter(room=self.room, author=user).count() == 0:
             self.room.roomuser_set.filter(user=user).delete()
-
-        self.room.bots.clear()
 
         async_to_sync(self.channel_layer.group_discard)(
             self.room_name,

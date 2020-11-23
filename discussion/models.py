@@ -6,7 +6,8 @@ from accounts.models import User
 
 class Theme(models.Model):
     theme = models.CharField(max_length=255, verbose_name='theme')
-    description = models.TextField(verbose_name='description')
+    problem = models.TextField(verbose_name='problem')
+    decision = models.TextField(verbose_name='decision')
     created_date = models.DateTimeField(auto_now_add=True, verbose_name='created date')
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='author', related_name='themes')
 
