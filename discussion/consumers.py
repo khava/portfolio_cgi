@@ -2,9 +2,7 @@ import json
 import random
 
 from asgiref.sync import async_to_sync
-from channels import consumer
 from channels.generic.websocket import WebsocketConsumer
-from django.core import serializers
 from django.shortcuts import get_object_or_404
 
 from accounts.models import User
