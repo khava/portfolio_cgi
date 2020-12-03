@@ -59,6 +59,7 @@ class BotComment(models.Model):
 class Room(models.Model):
     name = models.CharField(max_length=255, unique=True, verbose_name='name')
     created_date = models.DateTimeField(auto_now_add=True, verbose_name='created date')
+    closed = models.BooleanField(default=False, verbose_name='closed')
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, verbose_name='theme', related_name='rooms')
     users = models.ManyToManyField(User, through='RoomUser', related_name='rooms')
     bots = models.ManyToManyField(Bot, through='RoomBot', blank=True, related_name='rooms')

@@ -51,17 +51,20 @@ class DiscussionConsumer(WebsocketConsumer):
             user = get_object_or_404(User, username=self.scope['user'])
 
             if not RoomUser.objects.filter(room=self.room, user=user).exists():
-                RoomUser.objects.create(room=self.room, user=user)            
+                if not user.rooms.filter(closed=True).exists():  ####################################################
+                    RoomUser.objects.create(room=self.room, user=user)            
 
             self.accept()
             
 
     def disconnect(self, close_code):
 
-        # self.room.bots.clear()
-
-        if self.room.comments.count() == 0 or self.room.roomuser_set.count() == 0:
+        if self.room.comments.count() == 0 and self.room.roomuser_set.count() == 0:
             self.room.delete()
+
+        if self.room.roomuser_set.count() < 4:
+            self.room.bots.clear()
+
 
         user = get_object_or_404(User, username=self.scope['user'])
 
@@ -77,8 +80,12 @@ class DiscussionConsumer(WebsocketConsumer):
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json.get('message')
-        bot = text_data_json.get('bot')
         bot_comment = text_data_json.get('botComment')
+        closed = text_data_json.get('closed')
+
+        if closed:
+            self.room.closed = True
+            self.room.save()
         
         if not self.scope['user'].is_authenticated:
             return
@@ -88,13 +95,8 @@ class DiscussionConsumer(WebsocketConsumer):
 
             if len(message) > 10:
 
-                Comment.objects.create(
-                    comment=message,
-                    color=color_value,
-                    theme=self.theme,
-                    author=User.objects.get(username=self.scope['user']),
-                    room=self.room,
-                )
+                author = User.objects.get(username=self.scope['user'])
+                Comment.objects.create(comment=message, color=color_value, theme=self.theme, author=author, room=self.room)
 
             async_to_sync(self.channel_layer.group_send)(
                 self.room_name,
@@ -106,7 +108,32 @@ class DiscussionConsumer(WebsocketConsumer):
             )
 
 
-        if bot:
+        bot_1 = text_data_json.get('bot_1')
+        bot_2 = text_data_json.get('bot_2')
+        bots = text_data_json.get('bots')
+
+
+        if bot_1:
+            if Bot.objects.all().count() != 2:
+                create_bot()
+
+            bot_1 = Bot.objects.get(name='bot_1')
+
+            if not RoomBot.objects.filter(room=self.room, bot=bot_1).exists():
+                RoomBot.objects.create(room=self.room, bot=bot_1)  
+            
+
+        if bot_2:
+            if Bot.objects.all().count() != 2:
+                create_bot()
+
+            bot_2 = Bot.objects.get(name='bot_2')
+            
+            if not RoomBot.objects.filter(room=self.room, bot=bot_2).exists():
+                RoomBot.objects.create(room=self.room, bot=bot_2)
+
+
+        if bots:
             if Bot.objects.all().count() != 2:
                 create_bot()
 
@@ -119,10 +146,14 @@ class DiscussionConsumer(WebsocketConsumer):
             if not RoomBot.objects.filter(room=self.room, bot=bot_2).exists():
                 RoomBot.objects.create(room=self.room, bot=bot_2)
 
+
         if bot_comment:
+            bot_name = text_data_json.get('botName')
+            bot_color = text_data_json.get('botColor')
             random_comment = random.randint(0, 1)
-            bot = Bot.objects.get(name=text_data_json.get('botName'))
-            comment  = BotComment.objects.filter(bot=bot, color=text_data_json.get('botColor'))[random_comment]
+
+            bot = Bot.objects.get(name=bot_name)
+            comment  = BotComment.objects.filter(bot=bot, color=bot_color)[random_comment]
             
             async_to_sync(self.channel_layer.group_send)(
                 self.room_name,
