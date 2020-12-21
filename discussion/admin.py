@@ -10,7 +10,7 @@ class ThemeAdmin(admin.ModelAdmin):
 
 @admin.register(Room)
 class RoomAdmin(admin.ModelAdmin):
-    list_display = ('name', 'theme', 'created_date',)
+    list_display = ('name', 'theme', 'created_date', 'closed')
 
 
 @admin.register(Comment)

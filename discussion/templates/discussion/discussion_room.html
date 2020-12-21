@@ -24,27 +24,24 @@
     const ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
     const discussionSocket = new WebSocket(ws_scheme + '://' + window.location.host + '/ws/discussion/' + themeID + '/');
 
-    let discussionTimeIntervalId;
-    let botTimeIntervalId;
-    let getOneBotfiveUsersTimeoutId;
-    let getTwoBotfourUsersTimeoutId;
-    let getBotWhenfourUsersTimeoutId;
+    let botCommentGetTimeIntervalId;
+    let endDiscussionTimeoutId;
 
-    let discussionTime = 360000//18000000; // 30 minutes
-    let discussionTimeOneUser = 60000//300000; // 5 minutes
-    let botAddTime =  10000//420000; // 7 minutes
+    let discussionTime = 360000; //18000000; // 30 minutes
+    let discussionTimeOneUser = 60000; //300000; // 5 minutes
 
     let maxNumberParticipants = 6;
     let started_discussion = false;
-
-    let userColors = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
-    let colorDescription = ['Управление', 'Информация и факты', 'Эмоции и Чувства', 'Критическое суждение', 'Оптимистичность', 'Креативность'];
 
     discussionSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
         const message = data['message'];
         const receive_user = data['user'];
         const user = '{{ user }}';
+        let colors = data['colors']
+        let colorDescription = data['color_description']
+
+        console.log('colors', data['colors'])
 
         if (!!message && !!receive_user) {
             if (receive_user === user) {
@@ -57,7 +54,8 @@
         $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
   
         if (data['room_users']) {
-            const newRoomUsers = JSON.parse(data['room_users'])
+            let newRoomUsers = JSON.parse(data['room_users'])
+            let roomBots = JSON.parse(data['bots'])
 
             let roomUserHtml = ''
             for (let i in newRoomUsers) {
@@ -67,52 +65,11 @@
                     <h6 align="center" class="user-name">' + newRoomUsers[i].fields.username + '</h6> \
                 </div>';
             }
-
-            let roomBots = JSON.parse(data['bots'])
-
-            if (newRoomUsers.length === 4 && started_discussion === false) { 
-                getBotWhenfourUsersTimeoutId = setTimeout(() => {
-                    discussionSocket.send(JSON.stringify({
-                        'bots': true,
-                    }))        
-                }, botAddTime);
-            } else if (newRoomUsers.length === 5 && started_discussion === true && roomBots.length === 0) {
-                console.log(started_discussion)
-                getOneBotfiveUsersTimeoutId = setTimeout(() => {
-                    discussionSocket.send(JSON.stringify({
-                        'bot_1': true,
-                    }))        
-                }, 3000); //120000// 2 minutes
-            } else if (newRoomUsers.length === 4 && started_discussion === true && roomBots.length === 1) {
-                getTwoBotfourUsersTimeoutId = setTimeout(() => {
-                    discussionSocket.send(JSON.stringify({
-                        'bot_2': true,
-                    }))        
-                }, 3000); // 2 minutes
-            }
-
-            if (newRoomUsers.length === 5 && started_discussion === true && roomBots.length === 1) {
-                clearTimeout(getTwoBotfourUsersTimeoutId);
-
-            } else if (newRoomUsers.length === 6 && started_discussion === true) {
-                clearTimeout(getOneBotfiveUsersTimeoutId);
-
-            } else if (newRoomUsers.length !== 4) {
-                clearTimeout(getBotWhenfourUsersTimeoutId);
-            }
-  
             
             if (roomBots) {
-
                 if (roomBots.length === 1 && roomBots[0].fields.name === 'bot_1') {
                     roomUserHtml = roomUserHtml +
                     '<div class="user-avatar avatar-' + 6 + ' col-3 m-1" title="" > \
-                        <img class="card-img-top" src="/media/' + roomBots[0].fields.avatar + '" alt="User avatar"> \
-                        <h6 align="center" class="user-name">' + roomBots[0].fields.name + '</h6> \
-                    </div>';
-                } else if (roomBots.length === 1 && roomBots[0].fields.name === 'bot_2') {
-                    roomUserHtml = roomUserHtml +
-                    '<div class="user-avatar avatar-' + 5 + ' col-3 m-1" title="" > \
                         <img class="card-img-top" src="/media/' + roomBots[0].fields.avatar + '" alt="User avatar"> \
                         <h6 align="center" class="user-name">' + roomBots[0].fields.name + '</h6> \
                     </div>';
@@ -129,23 +86,35 @@
 
             $('.user-avatars').html($(roomUserHtml)); 
             $('.user-avatar').tooltip();  
+        }
 
-            
-            if (newRoomUsers.length === maxNumberParticipants || newRoomUsers.length + roomBots.length === maxNumberParticipants) {
-                setTimeout(() => {
-                    started_discussion = true;
-                    startTimer();
-                    changeColor();   
-                    discussionTimeIntervalId = setInterval(changeColor, discussionTimeOneUser);
-                    getBotComment();
-                }, 2000);
-            }
+        let participantsCount = document.getElementsByClassName('user-avatars')[0].childElementCount;
+        if (participantsCount === maxNumberParticipants) {
+            if (colors) {
+                colors = JSON.parse(colors)
+                colorDescription = JSON.parse(colorDescription)
+                started_discussion = true;
+                // startTimer();
+                changeColor(colors, colorDescription);
+                getBotComment();
+            }       
+        }
 
-            if (newRoomUsers.length < 4 && started_discussion === true) {
+        if (participantsCount < 4 && started_discussion === true) {
+            endDiscussionTimeoutId = setTimeout(() => {
                 discussionSocket.send(JSON.stringify({
                     'closed': true
                 }));
-            }
+                console.log('closed when participants < 4 and started_discussion = true')
+                clearInterval(botCommentGetTimeIntervalId);
+                discussionSocket.close();
+                alert('Обсуждение завершено, нехватка участников!')
+                window.location.replace(`${window.location.protocol}//${window.location.host}`);
+            }, 15000);
+        }
+
+        if (participantsCount.length > 3 && started_discussion === true) {
+            clearTimeout(endDiscussionTimeoutId);
         }
 
         if (data['bot_name']) {
@@ -160,6 +129,7 @@
 
     discussionSocket.onclose = function (e) {
         console.error('Chat socket closed unexpectedly');
+        console.error(e)
     };
 
     document.querySelector('#chat-message-input').focus();
@@ -181,7 +151,7 @@
                 colorValue = roomUsersAvatar[i].style.borderColor;
             }
         }
-        
+
         if (roomUsersAvatar.length === maxNumberParticipants) {
             discussionSocket.send(JSON.stringify({
                 'message': message,
@@ -189,7 +159,6 @@
             }));
 
             messageInput.value = '';
-            
         } else {
             messageInput.value = '';
             alert('Недостаточно участников');
@@ -197,44 +166,37 @@
     };
 
 
-    function changeColor() {
+    function changeColor(colors, colorDescription) {
         let roomUsersAvatar = document.getElementsByClassName('user-avatars')[0].children;
-        for (let i = 0; i < roomUsersAvatar.length; i++) {
-            roomUsersAvatar[i].style.border = `10px solid ${userColors[i]}`;
-            roomUsersAvatar[i].style.background = userColors[i];
+        for (let i = 0; i < maxNumberParticipants; i++) {
+            roomUsersAvatar[i].style.border = `10px solid ${colors[i]}`;
+            roomUsersAvatar[i].style.background = colors[i];
             roomUsersAvatar[i].setAttribute('data-original-title', colorDescription[i]);
         }
-        
-        userColors.unshift(userColors.pop());
-        colorDescription.unshift(colorDescription.pop());
 
         discussionTime = discussionTime - discussionTimeOneUser;
-
         if (roomUsersAvatar.length < maxNumberParticipants) {
-            clearInterval(discussionTimeIntervalId);
-            clearInterval(botTimeIntervalId);
+            clearInterval(botCommentGetTimeIntervalId);
 
             for (let i = 0; i < roomUsersAvatar.length; i++) {
                 roomUsersAvatar[i].style.border = '10px solid #343a40';
                 roomUsersAvatar[i].style.background = '#343a40';
             }
-
-            discussionSocket.onclose();
-            alert('Недостаточно участников для продолжения!');
+            // discussionSocket.onclose();
+            // alert('Недостаточно участников для продолжения!');
         }
         if (discussionTime === 0) {
-
-            clearInterval(discussionTimeIntervalId);
-            clearInterval(botTimeIntervalId);
+            clearInterval(botCommentGetTimeIntervalId);
             setTimeout(() => {
                 discussionSocket.send(JSON.stringify({
                     'closed': true
                 }));
-                discussionSocket.onclose();
+
                 for (let i = 0; i < roomUsersAvatar.length; i++) {
                     roomUsersAvatar[i].style.border = '10px solid #343a40';
                     roomUsersAvatar[i].style.background = '#343a40';
                 }
+                discussionSocket.onclose();
                 alert('Обсуждение завершено!');
                 window.location.replace(`${window.location.protocol}//${window.location.host}`);
             }, discussionTimeOneUser);
@@ -245,7 +207,7 @@
     function getBotComment(bot) {
         let botName;
         let timeGetBotComment = Math.floor(Math.random() * (180000 - 10000)) + 10000; // от 10 секунд до 3 минут
-        botTimeIntervalId = setInterval(() => {
+        botCommentGetTimeIntervalId = setInterval(() => {
             let roomUsersAvatar = document.getElementsByClassName('user-avatars')[0].children;
             timeGetBotComment = Math.floor(Math.random() * (180000 - 10000)) + 10000;
 
@@ -268,30 +230,30 @@
             }));
 
         }, timeGetBotComment);
-    };
+    };   
 
 
-    let duration_timer = 360; //1800// 30 minutes
-    let timerElement = document.querySelector('.timer')
+    // let duration_timer = 360; //1800// 30 minutes
+    // let timerElement = document.querySelector('.timer')
 
-    function startTimer() {
+    // function startTimer() {
       
-        let timer = duration_timer, minutes, seconds;
+    //     let timer = duration_timer, minutes, seconds;
         
-        timerIntervalId = setInterval(function() {
-            minutes = parseInt(timer / 60, 10)
-            seconds = parseInt(timer % 60, 10);
+    //     timerIntervalId = setInterval(function() {
+    //         minutes = parseInt(timer / 60, 10)
+    //         seconds = parseInt(timer % 60, 10);
 
-            minutes = minutes < 10 ? "0" + minutes : minutes;
-            seconds = seconds < 10 ? "0" + seconds : seconds;
+    //         minutes = minutes < 10 ? "0" + minutes : minutes;
+    //         seconds = seconds < 10 ? "0" + seconds : seconds;
 
-            timerElement.textContent = `00:${minutes}:${seconds}`;
-            if (--timer < 0) {
-                clearInterval(timerIntervalId);
-            }
+    //         timerElement.textContent = `00:${minutes}:${seconds}`;
+    //         if (--timer < 0) {
+    //             clearInterval(timerIntervalId);
+    //         }
 
-        }, 1000);
-    };
+    //     }, 1000);
+    // };
 
 </script>
 {% endblock %}
