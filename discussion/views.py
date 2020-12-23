@@ -52,12 +52,16 @@ class DiscussionView(View):
     def get(self, request, theme_id):
 
         users = []
+        comments = []
         theme = get_object_or_404(Theme, pk=theme_id)
         room = Room.objects.filter(theme=theme).last()
-        comments = Comment.objects.filter(theme=theme, room=room)
-
-        if room is not None:
+        
+        if room is not None and not room.closed:
             users = User.objects.filter(rooms__name=room.name).order_by('roomuser__created_date')
+            comments = Comment.objects.filter(theme=theme, room=room)
+        
+        print(f'----- COMMENTS {comments} -----')
+        print(f'----- USERS {users} -----')
 
         context = {
             'theme': theme,

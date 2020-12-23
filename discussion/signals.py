@@ -12,8 +12,8 @@ from discussion.models import Room, RoomUser, RoomBot, Bot
 from discussion.services import setInterval, add_bots_to_room
 
 
-colors = ['blue', 'white', 'red', 'black', 'yellow', 'green']
-color_description = ['Управление', 'Информация и факты', 'Эмоции и Чувства', 'Критическое суждение', 'Оптимистичность', 'Креативность']
+COLORS = 'blue, white, red, black, yellow, green'
+COLOR_DESCRIPTION = 'Управление, Информация и факты, Эмоции и Чувства, Критическое суждение, Оптимистичность, Креативность'
 
 MAX_NUMBER_PARTICIPANTS = 6
 ONE_PARTICIPANTS_TIME = 60.0
@@ -22,6 +22,8 @@ bot_add_timer = None
 change_color_timer = None
 stop_change_color = False
 
+colors_list = COLORS.split(', ')
+color_description_list = COLOR_DESCRIPTION.split(', ')
 
 @receiver([post_save, post_delete], sender=RoomUser)
 @receiver([post_save, post_delete], sender=RoomBot)
@@ -68,30 +70,31 @@ def room_bots(sender, instance, **kwargs):
 
 def permutation_color(room):
 
-	global colors
-	global color_description
+	global colors_list
+	global color_description_list
 	global stop_change_color
 
-	print(f'### Permutation color - {colors} ###')
+	print(f'### Permutation color - {colors_list} ###')
 
 	channel_layer = get_channel_layer()
 	async_to_sync(channel_layer.group_send)(
 		room.name,
 		{
 			'type': 'send_colors',
-			'colors': json.dumps(colors),
-			'color_description': json.dumps(color_description),
+			'colors': json.dumps(colors_list),
+			'color_description': json.dumps(color_description_list),
 		}
 	)
 
-	if colors[-1] == 'blue':
-		colors = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
-		color_description = ['Управление', 'Информация и факты', 'Эмоции и Чувства', 'Критическое суждение', 'Оптимистичность', 'Креативность'];
+	if colors_list[-1] == 'blue':
+		print('### colors permutation end, last element colors_list is blue ###')
+		colors_list = COLORS.split(', ')
+		color_description_list = COLOR_DESCRIPTION.split(', ')
 		stop_change_color = True
 		return
 
-	colors.insert(0, colors.pop())
-	color_description.insert(0, color_description.pop())
+	colors_list.insert(0, colors_list.pop())
+	color_description_list.insert(0, color_description_list.pop())
 
 
 @receiver([post_save, post_delete], sender=RoomUser)
@@ -102,43 +105,33 @@ def change_color(sender, instance, **kwargs):
 	room_bots = RoomBot.objects.filter(room=room)
 
 	global change_color_timer
-	global colors
-	global color_description
+	global stop_change_color
+	global colors_list
+	global color_description_list
 
 	if room_users.count() == MAX_NUMBER_PARTICIPANTS or room_users.count() + room_bots.count() == MAX_NUMBER_PARTICIPANTS:
 		print('### Colors change started ###')
+		
+		stop_change_color = False
+		change_color_timer = None
+		print(f'=== stop_change_color - {stop_change_color} ===')
+		print(f'=== change_color_timer - {change_color_timer} ===')
 
 		permutation_color(room)
 		p_color = setInterval(ONE_PARTICIPANTS_TIME, 5)(permutation_color)
 		change_color_timer = p_color(room)
 			
-	if change_color_timer is not None and room_users.count() < MAX_NUMBER_PARTICIPANTS and room_users.count() + room_bots.count() < MAX_NUMBER_PARTICIPANTS:
+	if change_color_timer is not None and (room_users.count() < MAX_NUMBER_PARTICIPANTS and room_users.count() + room_bots.count() < MAX_NUMBER_PARTICIPANTS):
 		print('### Colors change stoped, because participtnts < 6 ###')
 		
-		colors = ['blue', 'white', 'red', 'black', 'yellow', 'green']
-		color_description = ['Управление', 'Информация и факты', 'Эмоции и Чувства', 'Критическое суждение', 'Оптимистичность', 'Креативность']
-		print(colors)
+		colors_list = COLORS.split(', ')
+		color_description_list = COLOR_DESCRIPTION.split(', ')
 		change_color_timer.set()
 
 	if stop_change_color is True and change_color_timer is not None:
 		print('### Colors change stoped, change color is successful ###')
 		
-		colors = ['blue', 'white', 'red', 'black', 'yellow', 'green']
-		color_description = ['Управление', 'Информация и факты', 'Эмоции и Чувства', 'Критическое суждение', 'Оптимистичность', 'Креативность']
-		print(colors)
+		colors_list = COLORS.split(', ')
+		color_description_list = COLOR_DESCRIPTION.split(', ')
 		change_color_timer.set()
 		
-
-
-
-
-
-	
-
-	
-
-
-		
-
-
-	

@@ -223,12 +223,18 @@
                 }
             }
 
-            discussionSocket.send(JSON.stringify({
+            try {
+                discussionSocket.send(JSON.stringify({
                 'botComment': true,
                 'botName': botName,
                 'botColor': roomUsersAvatar[botIndex].style.borderColor
-            }));
+                }));
 
+            } catch (error) {
+                console.log('get bot comment error', error);
+            }
+
+            
         }, timeGetBotComment);
     };   
 

@@ -22,27 +22,27 @@ class BaseDiscussionConsumer(WebsocketConsumer):
         else:
             if not Room.objects.filter(theme=self.theme).exists():
                 room_name = f'theme_{self.theme.pk}_room_1'
-                print(room_name)
+                print(f'----- NEW FIRST ROOM NAME {room_name} -----')
                 self.room = Room.objects.create(name=room_name, theme=self.theme)
             
             elif self.user.rooms.filter(theme=self.theme, closed=False).exists():
                 self.room = self.user.rooms.filter(theme=self.theme, closed=False).last()
-                print('users', self.room)
+                print(f'----- USER HAS OPEN ROOM {self.room.name} -----')
 
             elif Room.objects.filter(theme=self.theme, closed=False).exists():
                 self.room = Room.objects.filter(theme=self.theme, closed=False).last()
-                print('room', self.room)
+                print(f'----- BD HAS OPEN ROOM {self.room.name} -----')
                 
                 if self.room.users.count() + self.room.bots.count() >= 6:
                     room_name = f'theme_{self.theme.pk}_room_{self.room.pk + 1}'
-                    print('1',room_name)
                     self.room = Room.objects.create(name=room_name, theme=self.theme)
-                    print('room >6', self.room)
+                    print(f'----- OPEN ROOM HAS < 6 USERS {self.room.name} -----')
             else:
                 self.room = Room.objects.filter(theme=self.theme).last()
                 room_name = f'theme_{self.theme.pk}_room_{self.room.pk + 1}'
                 self.room = Room.objects.create(name=room_name, theme=self.theme)
-                print('room treu', self.room)
+                print(f'----- NEW ROOM NAME {room_name} -----')
+                
 
             async_to_sync(self.channel_layer.group_add)(
                 self.room.name,
