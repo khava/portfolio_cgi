@@ -57,13 +57,19 @@ class BotComment(models.Model):
 
 
 class Room(models.Model):
+
+    COLORS = 'blue, white, red, black, yellow, green'
+    COLOR_DESCRIPTION = 'Управление, Информация и факты, Эмоции и Чувства, Критическое суждение, Оптимистичность, Креативность'
+
     name = models.CharField(max_length=255, unique=True, verbose_name='name')
     created_date = models.DateTimeField(auto_now_add=True, verbose_name='created date')
     closed = models.BooleanField(default=False, verbose_name='closed')
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, verbose_name='theme', related_name='rooms')
     users = models.ManyToManyField(User, through='RoomUser', related_name='rooms')
     bots = models.ManyToManyField(Bot, through='RoomBot', blank=True, related_name='rooms')
-    
+    colors = models.CharField(max_length=38, default=COLORS, verbose_name='colors')
+    color_description = models.CharField(max_length=101, default=COLOR_DESCRIPTION, verbose_name='color_description')
+
     class Meta:
         verbose_name = 'Комната'
         verbose_name_plural = 'Комнаты'

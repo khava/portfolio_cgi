@@ -27,9 +27,7 @@
     let botCommentGetTimeIntervalId;
     let endDiscussionTimeoutId;
 
-    let discussionTime = 360000; //18000000; // 30 minutes
-    let discussionTimeOneUser = 60000; //300000; // 5 minutes
-
+    let discussionTimeOneUser = 60000; // 5 minutes
     let maxNumberParticipants = 6;
     let started_discussion = false;
 
@@ -40,8 +38,6 @@
         const user = '{{ user }}';
         let colors = data['colors']
         let colorDescription = data['color_description']
-
-        console.log('colors', data['colors'])
 
         if (!!message && !!receive_user) {
             if (receive_user === user) {
@@ -92,6 +88,7 @@
         if (participantsCount === maxNumberParticipants) {
             if (colors) {
                 colors = JSON.parse(colors)
+                console.log(colors);
                 colorDescription = JSON.parse(colorDescription)
                 started_discussion = true;
                 // startTimer();
@@ -174,7 +171,6 @@
             roomUsersAvatar[i].setAttribute('data-original-title', colorDescription[i]);
         }
 
-        discussionTime = discussionTime - discussionTimeOneUser;
         if (roomUsersAvatar.length < maxNumberParticipants) {
             clearInterval(botCommentGetTimeIntervalId);
 
@@ -182,10 +178,9 @@
                 roomUsersAvatar[i].style.border = '10px solid #343a40';
                 roomUsersAvatar[i].style.background = '#343a40';
             }
-            // discussionSocket.onclose();
-            // alert('Недостаточно участников для продолжения!');
         }
-        if (discussionTime === 0) {
+
+        if (colors[5] === 'blue') {
             clearInterval(botCommentGetTimeIntervalId);
             setTimeout(() => {
                 discussionSocket.send(JSON.stringify({
@@ -199,7 +194,7 @@
                 discussionSocket.onclose();
                 alert('Обсуждение завершено!');
                 window.location.replace(`${window.location.protocol}//${window.location.host}`);
-            }, discussionTimeOneUser);
+            }, 15000); //discussionTimeOneUser
         }
     };
 

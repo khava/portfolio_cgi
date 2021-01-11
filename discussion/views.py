@@ -59,9 +59,6 @@ class DiscussionView(View):
         if room is not None and not room.closed:
             users = User.objects.filter(rooms__name=room.name).order_by('roomuser__created_date')
             comments = Comment.objects.filter(theme=theme, room=room)
-        
-        print(f'----- COMMENTS {comments} -----')
-        print(f'----- USERS {users} -----')
 
         context = {
             'theme': theme,

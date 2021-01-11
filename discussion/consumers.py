@@ -60,7 +60,7 @@ class BaseDiscussionConsumer(WebsocketConsumer):
         if self.room.roomuser_set.count() <= 4 and not self.room.closed:
             self.room.bots.clear()
 
-        if Comment.objects.filter(room=self.room, author=self.user).count() == 0 and not self.room.closed:
+        if not self.room.closed:
             self.room.roomuser_set.filter(user=self.user).delete()
 
         if self.room.comments.count() == 0 and self.room.roomuser_set.count() < 1:

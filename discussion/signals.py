@@ -14,27 +14,22 @@ from discussion.services import setInterval, add_bots_to_room
 
 COLORS = 'blue, white, red, black, yellow, green'
 COLOR_DESCRIPTION = 'Управление, Информация и факты, Эмоции и Чувства, Критическое суждение, Оптимистичность, Креативность'
-
 MAX_NUMBER_PARTICIPANTS = 6
-ONE_PARTICIPANTS_TIME = 60.0
+ONE_PARTICIPANTS_TIME = 30.0
 
 bot_add_timer = None
 change_color_timer = None
 stop_change_color = False
 
-colors_list = COLORS.split(', ')
-color_description_list = COLOR_DESCRIPTION.split(', ')
 
 @receiver([post_save, post_delete], sender=RoomUser)
 @receiver([post_save, post_delete], sender=RoomBot)
 def room_users(sender, instance, **kwargs):
 	
 	room = Room.objects.get(name=instance.room)
-
-	room_users = RoomUser.objects.filter(room=room)	
-	users = [User.objects.get(username=room_user.user) for room_user in room_users]
-
+	room_users = RoomUser.objects.filter(room=room)
 	room_bots = RoomBot.objects.filter(room=room)
+	users = [User.objects.get(username=room_user.user) for room_user in room_users]
 	bots = [Bot.objects.get(name=room_bot.bot) for room_bot in room_bots]
 
 	channel_layer = get_channel_layer()
@@ -56,8 +51,8 @@ def room_bots(sender, instance, **kwargs):
 	global bot_add_timer
 
 	if room_users.count() == 4:
-		if bot_add_timer is not None: bot_add_timer.cancel()
 		print('### Add TWO bots to room ###')
+		if bot_add_timer is not None: bot_add_timer.cancel()
 		bot_add_timer = Timer(15.0, add_bots_to_room, ('bots', room))
 		bot_add_timer.start()
 
@@ -70,9 +65,10 @@ def room_bots(sender, instance, **kwargs):
 
 def permutation_color(room):
 
-	global colors_list
-	global color_description_list
 	global stop_change_color
+
+	colors_list = room.colors.split(', ')
+	color_description_list = room.color_description.split(', ')
 
 	print(f'### Permutation color - {colors_list} ###')
 
@@ -87,14 +83,22 @@ def permutation_color(room):
 	)
 
 	if colors_list[-1] == 'blue':
-		print('### colors permutation end, last element colors_list is blue ###')
-		colors_list = COLORS.split(', ')
-		color_description_list = COLOR_DESCRIPTION.split(', ')
+		print('### colors permutation end, last element colors_list is blue ###')	
+		room.colors = COLORS
+		room.color_description = COLOR_DESCRIPTION
+		room.save()	
 		stop_change_color = True
 		return
 
 	colors_list.insert(0, colors_list.pop())
 	color_description_list.insert(0, color_description_list.pop())
+
+	room.colors = ', '.join(colors_list)
+	room.color_description = ', '.join(color_description_list)
+	room.save()
+
+	color_permutation_times = 6 - colors_list.index('blue')
+	return color_permutation_times 
 
 
 @receiver([post_save, post_delete], sender=RoomUser)
@@ -106,32 +110,22 @@ def change_color(sender, instance, **kwargs):
 
 	global change_color_timer
 	global stop_change_color
-	global colors_list
-	global color_description_list
 
 	if room_users.count() == MAX_NUMBER_PARTICIPANTS or room_users.count() + room_bots.count() == MAX_NUMBER_PARTICIPANTS:
 		print('### Colors change started ###')
 		
 		stop_change_color = False
 		change_color_timer = None
-		print(f'=== stop_change_color - {stop_change_color} ===')
-		print(f'=== change_color_timer - {change_color_timer} ===')
-
-		permutation_color(room)
-		p_color = setInterval(ONE_PARTICIPANTS_TIME, 5)(permutation_color)
+		
+		color_permutation_times = permutation_color(room)
+		p_color = setInterval(ONE_PARTICIPANTS_TIME, color_permutation_times)(permutation_color)
 		change_color_timer = p_color(room)
 			
 	if change_color_timer is not None and (room_users.count() < MAX_NUMBER_PARTICIPANTS and room_users.count() + room_bots.count() < MAX_NUMBER_PARTICIPANTS):
 		print('### Colors change stoped, because participtnts < 6 ###')
-		
-		colors_list = COLORS.split(', ')
-		color_description_list = COLOR_DESCRIPTION.split(', ')
 		change_color_timer.set()
 
 	if stop_change_color is True and change_color_timer is not None:
 		print('### Colors change stoped, change color is successful ###')
-		
-		colors_list = COLORS.split(', ')
-		color_description_list = COLOR_DESCRIPTION.split(', ')
 		change_color_timer.set()
 		
