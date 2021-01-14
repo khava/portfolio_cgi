@@ -21,7 +21,6 @@ bot_add_timer = None
 change_color_timer = None
 stop_change_color = False
 
-
 @receiver([post_save, post_delete], sender=RoomUser)
 @receiver([post_save, post_delete], sender=RoomBot)
 def room_users(sender, instance, **kwargs):
@@ -63,18 +62,10 @@ def room_bots(sender, instance, **kwargs):
 		bot_add_timer.start()
 
 
-def permutation_color(room):
-
-	global stop_change_color
-
-	colors_list = room.colors.split(', ')
-	color_description_list = room.color_description.split(', ')
-
-	print(f'### Permutation color - {colors_list} ###')
-
+def send_colors(room, colors_list, color_description_list):
 	channel_layer = get_channel_layer()
 	async_to_sync(channel_layer.group_send)(
-		room.name,
+		room,
 		{
 			'type': 'send_colors',
 			'colors': json.dumps(colors_list),
@@ -82,24 +73,36 @@ def permutation_color(room):
 		}
 	)
 
-	if colors_list[-1] == 'blue':
-		print('### colors permutation end, last element colors_list is blue ###')	
-		room.colors = COLORS
-		room.color_description = COLOR_DESCRIPTION
-		room.save()	
-		stop_change_color = True
-		return
+
+def permutation_color(room):
+
+	global stop_change_color
+
+	colors_list = room.colors.split(', ')
+	color_description_list = room.color_description.split(', ')
 
 	colors_list.insert(0, colors_list.pop())
 	color_description_list.insert(0, color_description_list.pop())
 
 	room.colors = ', '.join(colors_list)
 	room.color_description = ', '.join(color_description_list)
-	room.save()
+	room.save(update_fields=['colors', 'color_description'])
 
-	color_permutation_times = 6 - colors_list.index('blue')
-	return color_permutation_times 
+	colors_list = room.colors.split(', ')
+	color_description_list = room.color_description.split(', ')
 
+	print(f'### IN Permutation color - {colors_list} ###')
+
+	send_colors(room.name, colors_list, color_description_list)
+
+	if colors_list[-1] == 'blue':
+		print('### Colors permutation end, last element colors_list is blue ###')	
+		room.colors = COLORS
+		room.color_description = COLOR_DESCRIPTION
+		room.save(update_fields=['colors', 'color_description'])
+		stop_change_color = True
+		return
+	
 
 @receiver([post_save, post_delete], sender=RoomUser)
 @receiver([post_save, post_delete], sender=RoomBot)
@@ -116,8 +119,13 @@ def change_color(sender, instance, **kwargs):
 		
 		stop_change_color = False
 		change_color_timer = None
-		
-		color_permutation_times = permutation_color(room)
+
+		colors_list = room.colors.split(', ')
+		color_description_list = room.color_description.split(', ')
+		print(f'### OUT Permutation color - {colors_list} ###')
+		send_colors(room.name, colors_list, color_description_list)
+
+		color_permutation_times = 6 - (colors_list.index('blue') + 1)
 		p_color = setInterval(ONE_PARTICIPANTS_TIME, color_permutation_times)(permutation_color)
 		change_color_timer = p_color(room)
 			
@@ -128,4 +136,3 @@ def change_color(sender, instance, **kwargs):
 	if stop_change_color is True and change_color_timer is not None:
 		print('### Colors change stoped, change color is successful ###')
 		change_color_timer.set()
-		

@@ -92,7 +92,7 @@ class DiscussionConsumer(BaseDiscussionConsumer, WebsocketConsumer):
 
         if closed:
             self.room.closed = True
-            self.room.save()
+            self.room.save(update_fields=['closed'])
         
         if message:
             color_value = text_data_json.get('colorValue')
