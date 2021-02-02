@@ -1,8 +1,8 @@
-import json
+from itertools import chain
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.views.generic import View, ListView, CreateView
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -46,24 +46,35 @@ class DescriptionThemeView(View):
         return render(request, 'discussion/theme_description.html', context={'theme': theme})
 
 
-class DiscussionView(View):
+class DiscussionRoomView(View):
+
+    @method_decorator(login_required)
+    def get(self, request, room_id):
+
+        room = get_object_or_404(Room, pk=room_id)
+
+        context = {
+            'room': room,
+        }
+
+        return render(request, 'discussion/discussion_room.html', context)
+
+
+class CreateDiscussionRoomView(View):
 
     @method_decorator(login_required)
     def get(self, request, theme_id):
 
-        users = []
-        comments = []
-        theme = get_object_or_404(Theme, pk=theme_id)
-        room = Room.objects.filter(theme=theme).last()
-        
-        if room is not None and not room.closed:
-            users = User.objects.filter(rooms__name=room.name).order_by('roomuser__created_date')
-            comments = Comment.objects.filter(theme=theme, room=room)
+        theme = Theme.objects.get(pk=theme_id)
+        theme_current_rooms = Room.objects.filter(theme=theme)
 
-        context = {
-            'theme': theme,
-            'users': users,
-            'comments': comments,
-        }
+        if theme_current_rooms.exists():
+            last_current_room = theme_current_rooms.last()
+            room_name = f'theme_{theme_id}_room_{last_current_room.id + 1}'
+        else:
+            room_name = f'theme_{theme_id}_room_1'
 
-        return render(request, 'discussion/discussion_room.html', context)
+        room = Room.objects.create(name=room_name, theme=theme)
+        RoomUser.objects.create(room=room, user=request.user)
+
+        return redirect(reverse_lazy('discussion', kwargs={'room_id': room.pk}))

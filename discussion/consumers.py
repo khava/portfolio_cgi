@@ -7,63 +7,41 @@ from django.shortcuts import get_object_or_404
 
 from accounts.models import User
 from discussion.models import Comment, Room, RoomUser, RoomBot, Theme, Bot, BotComment
+from discussion.services import change_color, add_bots, send_colors
 
 
-class BaseDiscussionConsumer(WebsocketConsumer):
+class DiscussionConsumer(WebsocketConsumer):
 
     def connect(self):
 
-        self.theme = Theme.objects.filter(pk=self.scope['url_route']['kwargs']['theme_id']).first()
+        self.room = get_object_or_404(Room, pk=self.scope['url_route']['kwargs']['room_id'])
+        self.theme = self.room.theme
         self.user = get_object_or_404(User, username=self.scope['user'])
         
         if self.scope['user'].is_anonymous or self.theme.author == self.user.username:
             self.close()
 
-        else:
-            if not Room.objects.filter(theme=self.theme).exists():
-                room_name = f'theme_{self.theme.pk}_room_1'
-                print(f'----- NEW FIRST ROOM NAME {room_name} -----')
-                self.room = Room.objects.create(name=room_name, theme=self.theme)
-            
-            elif self.user.rooms.filter(theme=self.theme, closed=False).exists():
-                self.room = self.user.rooms.filter(theme=self.theme, closed=False).last()
-                print(f'----- USER HAS OPEN ROOM {self.room.name} -----')
+        async_to_sync(self.channel_layer.group_add)(
+            self.room.name,
+            self.channel_name
+        )
 
-            elif Room.objects.filter(theme=self.theme, closed=False).exists():
-                self.room = Room.objects.filter(theme=self.theme, closed=False).last()
-                print(f'----- BD HAS OPEN ROOM {self.room.name} -----')
-                
-                if self.room.users.count() + self.room.bots.count() >= 6:
-                    room_name = f'theme_{self.theme.pk}_room_{self.room.pk + 1}'
-                    self.room = Room.objects.create(name=room_name, theme=self.theme)
-                    print(f'----- OPEN ROOM HAS < 6 USERS {self.room.name} -----')
-            else:
-                self.room = Room.objects.filter(theme=self.theme).last()
-                room_name = f'theme_{self.theme.pk}_room_{self.room.pk + 1}'
-                self.room = Room.objects.create(name=room_name, theme=self.theme)
-                print(f'----- NEW ROOM NAME {room_name} -----')
-                
-
-            async_to_sync(self.channel_layer.group_add)(
-                self.room.name,
-                self.channel_name
-            )
-            
+        if self.room.users.count() < 6:
             if not RoomUser.objects.filter(room=self.room, user=self.user).exists():
                 RoomUser.objects.create(room=self.room, user=self.user)            
+        
+        self.accept()
 
-            self.accept()
-
+        if self.room.started and not self.room.closed:
+            change_color(self.room)
+            
 
     def disconnect(self, close_code):
 
-        if self.room.roomuser_set.count() <= 4 and not self.room.closed:
+        if self.room.roomuser_set.count() < 4:
             self.room.bots.clear()
 
-        if not self.room.closed:
-            self.room.roomuser_set.filter(user=self.user).delete()
-
-        if self.room.comments.count() == 0 and self.room.roomuser_set.count() < 1:
+        if self.room.roomuser_set.count() < 1:
             self.room.delete()
 
         async_to_sync(self.channel_layer.group_discard)(
@@ -71,33 +49,27 @@ class BaseDiscussionConsumer(WebsocketConsumer):
             self.channel_name
         )
 
-    
-class DiscussionConsumer(BaseDiscussionConsumer, WebsocketConsumer):
-
-    def connect(self):
-        return super().connect()
-
-    def disconnect(self, close_code):
-        return super().disconnect(close_code)
 
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message = text_data_json.get('message')
-        bot_comment = text_data_json.get('botComment')
-        closed = text_data_json.get('closed')
-        
+        color_value = text_data_json.get('colorValue')
+        is_user_leave_room = text_data_json.get('isUserLeaveRoom')
+        is_discussion_start = text_data_json.get('isDiscussionStart')
+        is_bots_add = text_data_json.get('isBotsAdd')
+        is_get_bot_comment = text_data_json.get('isGetBotComment')
+        is_closed = text_data_json.get('closed')
 
-        if not self.scope['user'].is_authenticated:
-            return
+        if is_user_leave_room:
+            self.room.roomuser_set.filter(user=self.user).delete()
 
-        if closed:
-            self.room.closed = True
-            self.room.save(update_fields=['closed'])
-        
-        if message:
-            color_value = text_data_json.get('colorValue')
+        if is_discussion_start:
+            self.room.started = True
+            self.room.save(update_fields=['started'])
+            change_color(self.room)
 
-            if len(message) > 10:
+        if message: 
+            if color_value:
                 Comment.objects.create(comment=message, color=color_value, theme=self.theme, author=self.user, room=self.room)
 
             async_to_sync(self.channel_layer.group_send)(
@@ -108,8 +80,11 @@ class DiscussionConsumer(BaseDiscussionConsumer, WebsocketConsumer):
                     'user': str(self.scope['user']),
                 }
             )
+        
+        if is_bots_add:
+            add_bots(self.room)
 
-        if bot_comment:
+        if is_get_bot_comment:
             bot_name = text_data_json.get('botName')
             bot_color = text_data_json.get('botColor')
             random_comment = random.randint(0, 1)
@@ -128,6 +103,11 @@ class DiscussionConsumer(BaseDiscussionConsumer, WebsocketConsumer):
                 )
             except IndexError:
                 pass
+
+        if is_closed:
+            self.room.closed = True
+            self.room.save(update_fields=['closed'])
+
 
 
     def send_discussion_message(self, event): 
@@ -154,4 +134,31 @@ class DiscussionConsumer(BaseDiscussionConsumer, WebsocketConsumer):
         self.send(text_data=json.dumps({
             'colors': event['colors'],
             'color_description': event['color_description']
+        }))
+
+
+class NumberParticipantsRoomDisplayConsumer(WebsocketConsumer):
+
+    def connect(self):
+
+        if not self.scope['user'].is_authenticated:
+            self.close
+
+        self.room_name = 'number_participants'
+        async_to_sync(self.channel_layer.group_add)(
+            self.room_name,
+            self.channel_name
+        )
+            
+        self.accept()
+
+    def disconnect(self, code):
+        async_to_sync(self.channel_layer.group_discard)(
+            self.room_name,
+            self.channel_name
+        )
+
+    def send_num_participants(self, event):
+        self.send(text_data=json.dumps({
+            'num_participants': event['num_participants'],
         }))

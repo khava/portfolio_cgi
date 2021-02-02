@@ -4,5 +4,6 @@ from discussion import consumers
 
 
 websocket_urlpatterns = [
-    path('ws/discussion/<theme_id>/', consumers.DiscussionConsumer),
+    path('ws/room_num_participants/', consumers.NumberParticipantsRoomDisplayConsumer),
+    path('ws/discussion/<room_id>/', consumers.DiscussionConsumer),
 ]

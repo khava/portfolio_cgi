@@ -6,7 +6,7 @@
 
 <div class="container">
     <div class="row" style="flex-wrap: wrap;">
-        <div class="col-8">
+        <div class="col-7">
             <div class="row room-users">
                 <img src ="{% static 'image/table.png' %}">
                 {% include 'discussion/users_avatars.html' %}
@@ -16,46 +16,51 @@
     </div>
 </div>
 
-{{ theme.pk|json_script:"theme_id" }}
+{{ room.pk|json_script:"room_id" }}
+{{ room.started|json_script:"room_is_started" }}
 <script>
     
     $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
-    const themeID = JSON.parse(document.getElementById('theme_id').textContent);
-    const ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-    const discussionSocket = new WebSocket(ws_scheme + '://' + window.location.host + '/ws/discussion/' + themeID + '/');
-
+    const roomID = JSON.parse(document.getElementById('room_id').textContent);
+    const roomIsStarted = JSON.parse(document.getElementById('room_is_started').textContent);
+    const wsScheme = window.location.protocol == "https:" ? "wss" : "ws";
+    const discussionSocket = new WebSocket(wsScheme + '://' + window.location.host + '/ws/discussion/' + roomID + '/');
+    
+    const maxNumberParticipants = 6;
+    const discussionTimeOneUser = 60000;
     let botCommentGetTimeIntervalId;
-    let endDiscussionTimeoutId;
 
-    let discussionTimeOneUser = 60000; // 5 minutes
-    let maxNumberParticipants = 6;
-    let started_discussion = false;
-
-    discussionSocket.onmessage = function (e) {
+    discussionSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
         const message = data['message'];
-        const receive_user = data['user'];
+        const receiveUser = data['user'];
         const user = '{{ user }}';
         let colors = data['colors']
         let colorDescription = data['color_description']
+        const botName = data['bot_name'];
+        const botComment = data['bot_comment'];
 
-        if (!!message && !!receive_user) {
-            if (receive_user === user) {
-                $('<li><div class="chat-body"><p class="text-right"><strong>' + user + '</strong></p><p class="text-right">' + message + '</p></div></li>').appendTo($('.chat'))
+        if (!!message && !!receiveUser) {
+            if (receiveUser === user) {
+                $('<li><div class="chat-body"><p class="text-right"><strong>' + 
+                    user + '</strong></p><p class="text-right">' + message + 
+                        '</p></div></li>').appendTo($('.chat'))
             } else {
-                $('<li><div class="chat-body"><p class="text-left"><strong>' + receive_user + '</strong></p><p class="text-left">' + message + '</p></div></li>').appendTo($('.chat'))
+                $('<li><div class="chat-body"><p class="text-left"><strong>' + 
+                    receiveUser + '</strong></p><p class="text-left">' + message + 
+                        '</p></div></li>').appendTo($('.chat'))
             };
         }
         
         $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
   
         if (data['room_users']) {
-            let newRoomUsers = JSON.parse(data['room_users'])
-            let roomBots = JSON.parse(data['bots'])
+            const newRoomUsers = JSON.parse(data['room_users'])
+            const roomBots = JSON.parse(data['bots'])
 
-            let roomUserHtml = ''
+            let roomParticipantsHtml = ''
             for (let i in newRoomUsers) {
-                roomUserHtml = roomUserHtml + 
+                roomParticipantsHtml = roomParticipantsHtml + 
                 '<div class="user-avatar avatar-' + (parseInt(i) + 1) + ' col-3 m-1" title=""> \
                     <img class="card-img-top" src="/media/' + newRoomUsers[i].fields.avatar + '" alt="User avatar"> \
                     <h6 align="center" class="user-name">' + newRoomUsers[i].fields.username + '</h6> \
@@ -64,14 +69,14 @@
             
             if (roomBots) {
                 if (roomBots.length === 1 && roomBots[0].fields.name === 'bot_1') {
-                    roomUserHtml = roomUserHtml +
+                    roomParticipantsHtml = roomParticipantsHtml +
                     '<div class="user-avatar avatar-' + 6 + ' col-3 m-1" title="" > \
                         <img class="card-img-top" src="/media/' + roomBots[0].fields.avatar + '" alt="User avatar"> \
                         <h6 align="center" class="user-name">' + roomBots[0].fields.name + '</h6> \
                     </div>';
                 } else {
                     for (let i in roomBots) {
-                        roomUserHtml = roomUserHtml +
+                        roomParticipantsHtml = roomParticipantsHtml +
                         '<div class="user-avatar avatar-' + (parseInt(i) + 5) + ' col-3 m-1" title="" > \
                             <img class="card-img-top" src="/media/' + roomBots[i].fields.avatar + '" alt="User avatar"> \
                             <h6 align="center" class="user-name">' + roomBots[i].fields.name + '</h6> \
@@ -80,51 +85,31 @@
                 }
             }  
 
-            $('.user-avatars').html($(roomUserHtml)); 
+            $('.user-avatars').html($(roomParticipantsHtml)); 
             $('.user-avatar').tooltip();  
         }
 
-        let participantsCount = document.getElementsByClassName('user-avatars')[0].childElementCount;
-        if (participantsCount === maxNumberParticipants) {
-            if (colors) {
-                colors = JSON.parse(colors)
-                console.log(colors);
-                colorDescription = JSON.parse(colorDescription)
-                started_discussion = true;
-                // startTimer();
-                changeColor(colors, colorDescription);
-                getBotComment();
-            }       
-        }
-
-        if (participantsCount < 4 && started_discussion === true) {
-            endDiscussionTimeoutId = setTimeout(() => {
-                discussionSocket.send(JSON.stringify({
-                    'closed': true
-                }));
-                console.log('closed when participants < 4 and started_discussion = true')
-                clearInterval(botCommentGetTimeIntervalId);
-                discussionSocket.close();
-                alert('Обсуждение завершено, нехватка участников!')
-                window.location.replace(`${window.location.protocol}//${window.location.host}`);
-            }, 15000);
-        }
-
-        if (participantsCount.length > 3 && started_discussion === true) {
-            clearTimeout(endDiscussionTimeoutId);
-        }
+        if (colors) {
+            colors = JSON.parse(colors);
+            colorDescription = JSON.parse(colorDescription);
+            console.log(colors);
+            // startTimer();
+            changeColor(colors, colorDescription);
+            getBotComment();
+        }      
 
         if (data['bot_name']) {
-            let botName = data['bot_name'];
-            let botComment = data['bot_comment'];
             
-            $('<li><div class="chat-body"><p class="text-left"><strong>' + botName + '</strong></p><p class="text-left">' + botComment + '</p></div></li>').appendTo($('.chat'))
-            $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
+            $('<li><div class="chat-body"><p class="text-left"><strong>' + 
+                botName + '</strong></p><p class="text-left">' + botComment + 
+                    '</p></div></li>').appendTo($('.chat'))
+            
+                $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
         }
     }
 
 
-    discussionSocket.onclose = function (e) {
+    discussionSocket.onclose = function(e) {
         console.error('Chat socket closed unexpectedly');
         console.error(e)
     };
@@ -141,42 +126,85 @@
         const message = messageInput.value;
 
         let colorValue;
-        let roomUsersAvatar = document.querySelectorAll(".room-users .user-avatar")
+        let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
+        let colorsList = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
         
-        for (let i = 0; i < roomUsersAvatar.length; i++) {
-            if ('{{ user }}' === roomUsersAvatar[i].innerText) {
-                colorValue = roomUsersAvatar[i].style.borderColor;
+        for (let i = 0; i < roomParticipants.length; i++) {
+            if ('{{ user }}' === roomParticipants[i].innerText) {
+                if (colorsList.indexOf(roomParticipants[i].style.borderColor) !== -1) {
+                    colorValue = roomParticipants[i].style.borderColor;
+                }
             }
         }
 
-        if (roomUsersAvatar.length === maxNumberParticipants) {
-            discussionSocket.send(JSON.stringify({
-                'message': message,
-                'colorValue': colorValue,
+        discussionSocket.send(JSON.stringify({
+            'message': message,
+            'colorValue': colorValue,
+        }));
+
+        messageInput.value = '';
+    };
+
+    document.querySelector("#leave-room").onclick = function(e) {
+
+        let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
+        let colorsList = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
+
+        if (roomIsStarted === false &&  colorsList.indexOf(roomParticipants[0].style.borderColor) === -1) {
+                discussionSocket.send(JSON.stringify({
+                'isUserLeaveRoom': true,
             }));
 
-            messageInput.value = '';
+            window.location.replace(`${window.location.protocol}//${window.location.host}`);
         } else {
-            messageInput.value = '';
-            alert('Недостаточно участников');
+            alert('Вы не можете покинуть комнату, т.к. обсуждение начато!');
+        }    
+    }
+
+    document.querySelector("#start-discussion").onclick = function(e) {
+        let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
+
+        if (roomIsStarted === false) {
+            if (roomParticipants.length === maxNumberParticipants) {
+            discussionSocket.send(JSON.stringify({
+                'isDiscussionStart': true,
+            }));
+        } else {
+                alert('Недостаточно участников!');
+            }
+        } else {
+            alert('Обсуждение начато!');
+        }   
+    }
+
+    document.querySelector("#add-bots").onclick = function(e) {
+        let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
+
+        if (roomParticipants.length >= 4 && roomParticipants.length < 6) {
+            discussionSocket.send(JSON.stringify({
+                'isBotsAdd': true,
+            }));
+        } else {
+            alert('Для добавления ботов участников должно быть >= 4 и < 6.');
         }
-    };
+    }
 
 
     function changeColor(colors, colorDescription) {
-        let roomUsersAvatar = document.getElementsByClassName('user-avatars')[0].children;
+        let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
+
         for (let i = 0; i < maxNumberParticipants; i++) {
-            roomUsersAvatar[i].style.border = `10px solid ${colors[i]}`;
-            roomUsersAvatar[i].style.background = colors[i];
-            roomUsersAvatar[i].setAttribute('data-original-title', colorDescription[i]);
+            roomParticipants[i].style.border = `10px solid ${colors[i]}`;
+            roomParticipants[i].style.background = colors[i];
+            roomParticipants[i].setAttribute('data-original-title', colorDescription[i]);
         }
 
-        if (roomUsersAvatar.length < maxNumberParticipants) {
+        if (roomParticipants.length < maxNumberParticipants) {
             clearInterval(botCommentGetTimeIntervalId);
 
-            for (let i = 0; i < roomUsersAvatar.length; i++) {
-                roomUsersAvatar[i].style.border = '10px solid #343a40';
-                roomUsersAvatar[i].style.background = '#343a40';
+            for (let i = 0; i < roomParticipants.length; i++) {
+                roomParticipants[i].style.border = '10px solid #343a40';
+                roomParticipants[i].style.background = '#343a40';
             }
         }
 
@@ -187,14 +215,14 @@
                     'closed': true
                 }));
 
-                for (let i = 0; i < roomUsersAvatar.length; i++) {
-                    roomUsersAvatar[i].style.border = '10px solid #343a40';
-                    roomUsersAvatar[i].style.background = '#343a40';
+                for (let i = 0; i < roomParticipants.length; i++) {
+                    roomParticipants[i].style.border = '10px solid #343a40';
+                    roomParticipants[i].style.background = '#343a40';
                 }
                 discussionSocket.onclose();
                 alert('Обсуждение завершено!');
                 window.location.replace(`${window.location.protocol}//${window.location.host}`);
-            }, 15000); //discussionTimeOneUser
+            }, discussionTimeOneUser);
         }
     };
 
@@ -202,8 +230,10 @@
     function getBotComment(bot) {
         let botName;
         let timeGetBotComment = Math.floor(Math.random() * (180000 - 10000)) + 10000; // от 10 секунд до 3 минут
+        
         botCommentGetTimeIntervalId = setInterval(() => {
-            let roomUsersAvatar = document.getElementsByClassName('user-avatars')[0].children;
+
+            let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
             timeGetBotComment = Math.floor(Math.random() * (180000 - 10000)) + 10000;
 
             if (bot === 'bot_1' || bot === 'bot_2') {
@@ -212,26 +242,24 @@
                 botName = `bot_${Math.floor(Math.random() * (3 - 1)) + 1}`
             }
             let botIndex;
-            for (let i = 0; i < roomUsersAvatar.length; i++) {
-                if (roomUsersAvatar[i].innerText === botName) {
+            for (let i = 0; i < roomParticipants.length; i++) {
+                if (roomParticipants[i].innerText === botName) {
                     botIndex = i;
                 }
             }
 
             try {
                 discussionSocket.send(JSON.stringify({
-                'botComment': true,
-                'botName': botName,
-                'botColor': roomUsersAvatar[botIndex].style.borderColor
+                    'isGetBotComment': true,
+                    'botName': botName,
+                    'botColor': roomParticipants[botIndex].style.borderColor
                 }));
 
             } catch (error) {
                 console.log('get bot comment error', error);
             }
-
-            
         }, timeGetBotComment);
-    };   
+    }
 
 
     // let duration_timer = 360; //1800// 30 minutes

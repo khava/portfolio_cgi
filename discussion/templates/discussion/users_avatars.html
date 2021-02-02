@@ -1,89 +1,102 @@
 <div class="user-avatars">
-    {% comment %}
+    <!-- {% comment %}
     
-        <div class="avatar-1 col-3 m-1" title="">  
-            {% if users.0  %} 
-                <img class="card-img-top" src="{{ users.0.avatar.url }}" alt="User avatar">
+        <div class="user-avatar avatar-1 col-3 m-1" title="">  
+            {% if room.get_participants.0  %} 
+                <img class="card-img-top" src="{{ room.get_participants.0.avatar.url }}" alt="User avatar">
             {% endif %}
-            <h6 align="center" class="user-name">{% if users.0  %} {{ users.0.username }} {% else %} <a href="#">Пригласить</a> {% endif %}</h6>
-        </div>
-    
-        <div class="avatar-2 col-3 m-1" title="">  
-            {% if users.1  %} 
-                <img class="card-img-top" src="{{ users.1.avatar.url }}" alt="User avatar">
-            {% endif %}
-            <h6 align="center" class="user-name">{% if users.1  %} {{ users.1.username }} {% else %} <a href="#">Пригласить</a> {% endif %}</h6>
-        </div>
-
-        <div class="avatar-3 col-3 m-1" title="">  
-            {% if users.2  %} 
-                <img class="card-img-top" src="{{ users.2.avatar.url }}" alt="User avatar">
-            {% endif %}
-            <h6 align="center" class="user-name">{% if users.2  %} {{ users.2.username }} {% else %} <a href="#">Пригласить</a> {% endif %}</h6>
-        </div>
-
-        <div class="avatar-4 col-3 m-1" title="">  
-            {% if users.3  %} 
-                <img class="card-img-top" src="{{ users.3.avatar.url }}" alt="User avatar">
-            {% endif %}
-            <h6 align="center" class="user-name">{% if users.3  %} {{ users.3.username }} {% else %} <a href="#">Пригласить</a> {% endif %}</h6>
-        </div>
-
-        <div class="avatar-5 col-3 m-1" title="">  
-            {% if users.4  %} 
-                <img class="card-img-top" src="{{ users.4.avatar.url }}" alt="User avatar">
-            {% endif %}
-            <h6 align="center" class="user-name">{% if users.4  %} {{ users.4.username }} {% else %} <a href="#">Пригласить</a> {% endif %}</h6>
-        </div>
-
-        <div class="avatar-6 col-3 m-1" title="">  
-            {% if users.5  %} 
-                <img class="card-img-top" src="{{ users.5.avatar.url }}" alt="User avatar">
-            {% endif %}
-            <h6 align="center" class="user-name">{% if users.5  %} {{ users.5.username }} {% else %} <a href="#">Пригласить</a> {% endif %}</h6>
+            <h6 align="center" class="user-name">{% if room.get_participants.0  %} {{ room.get_participants.0.username }} {% else %} <a href="#">Пригласить</a> {% endif %}</h6>
         </div>
     
-    {% endcomment %}
+        <div class="user-avatar avatar-2 col-3 m-1" title="">  
+            {% if room.get_participants.1  %} 
+                <img class="card-img-top" src="{{ room.get_participants.1.avatar.url }}" alt="User avatar">
+            {% endif %}
+            <h6 align="center" class="user-name">{% if room.get_participants.1  %} {{ room.get_participants.1.username }} {% else %} <a href="#">Пригласить</a> {% endif %}</h6>
+        </div>
 
-    {% if users.0 %}
-        <div class="avatar-1 col-3 m-1">                        
-            <img class="card-img-top" src="{{ users.0.avatar.url }}" alt="User avatar">
-            <h6 align="center" class="user-name">{{ users.0.username }}</h6>
+        <div class="user-avatar avatar-3 col-3 m-1" title="">  
+            {% if room.get_participants.2  %} 
+                <img class="card-img-top" src="{{ room.get_participants.2.avatar.url }}" alt="User avatar">
+            {% endif %}
+            <h6 align="center" class="user-name">{% if room.get_participants.2  %} {{ room.get_participants.2.username }} {% else %} <a href="#">Пригласить</a> {% endif %}</h6>
+        </div>
+
+        <div class="user-avatar avatar-4 col-3 m-1" title="">  
+            {% if room.get_participants.3  %} 
+                <img class="card-img-top" src="{{ room.get_participants.3.avatar.url }}" alt="User avatar">
+            {% endif %}
+            <h6 align="center" class="user-name">{% if room.get_participants.3  %} {{ room.get_participants.3.username }} {% else %} <a href="#">Пригласить</a> {% endif %}</h6>
+        </div>
+
+        <div class="user-avatar avatar-5 col-3 m-1" title="">  
+            {% if room.get_participants.4  %} 
+                <img class="card-img-top" src="{{ room.get_participants.4.avatar.url }}" alt="User avatar">
+            {% endif %}
+            <h6 align="center" class="user-name">{% if room.get_participants.4  %} {{ room.get_participants.4.username }} {% else %} <a href="#">Пригласить</a> {% endif %}</h6>
+        </div>
+
+        <div class="user-avatar avatar-6 col-3 m-1" title="">  
+            {% if room.get_participants.5  %} 
+                <img class="card-img-top" src="{{ room.get_participants.5.avatar.url }}" alt="User avatar">
+            {% endif %}
+            <h6 align="center" class="user-name">{% if room.get_participants.5  %} {{ room.get_participants.5.username }} {% else %} <a href="#">Пригласить</a> {% endif %}</h6>
+        </div>
+    
+    {% endcomment %} -->
+
+
+    {% if room.get_participants.0 %}
+        <div class="user-avatar avatar-1 col-3 m-1">                        
+            <img class="card-img-top" src="{{ room.get_participants.0.avatar.url }}" alt="User avatar">
+            <h6 align="center" class="user-name">{{ room.get_participants.0.username }}</h6>
         </div>
     {% endif %}
 
-    {% if users.1 %}
-        <div class="avatar-2 col-3 m-1">                       
-            <img class="card-img-top" src="{{ users.1.avatar.url }}" alt="User avatar">                        
-            <h6 align="center" class="user-name">{{ users.1.username }}</h6>
+    {% if room.get_participants.1 %}
+        <div class="user-avatar avatar-2 col-3 m-1">                       
+            <img class="card-img-top" src="{{ room.get_participants.1.avatar.url }}" alt="User avatar">                        
+            <h6 align="center" class="user-name">{{ room.get_participants.1.username }}</h6>
         </div>
     {% endif %}
 
-    {% if users.2 %}
-        <div class="avatar-3 col-3 m-1">                        
-            <img class="card-img-top" src="{{ users.2.avatar.url }}" alt="User avatar">                       
-            <h6 align="center" class="user-name">{{ users.2.username }}</h6>
+    {% if room.get_participants.2 %}
+        <div class="user-avatar avatar-3 col-3 m-1">                        
+            <img class="card-img-top" src="{{ room.get_participants.2.avatar.url }}" alt="User avatar">                       
+            <h6 align="center" class="user-name">{{ room.get_participants.2.username }}</h6>
         </div>
     {% endif %}
 
-    {% if users.3 %}
-        <div class="avatar-4 col-3 m-1">                        
-            <img class="card-img-top" src="{{ users.3.avatar.url }}" alt="User avatar">                       
-            <h6 align="center" class="user-name">{{ users.3.username }}</h6>
+    {% if room.get_participants.3 %}
+        <div class="user-avatar avatar-4 col-3 m-1">                        
+            <img class="card-img-top" src="{{ room.get_participants.3.avatar.url }}" alt="User avatar">                       
+            <h6 align="center" class="user-name">{{ room.get_participants.3.username }}</h6>
         </div>
     {% endif %}
 
-    {% if users.4 %}
-        <div class="avatar-5 col-3 m-1">                       
-            <img class="card-img-top" src="{{ users.4.avatar.url }}" alt="User avatar">                        
-            <h6 align="center" class="user-name">{{ users.4.username }}</h6>
+    {% if room.get_participants.4 %}
+        <div class="user-avatar avatar-5 col-3 m-1">                       
+            <img class="card-img-top" src="{{ room.get_participants.4.avatar.url }}" alt="User avatar">                        
+            <h6 align="center" class="user-name">
+                {% if room.get_participants.4.username %}
+                    {{ room.get_participants.4.username }}
+                {% else %}
+                    {{ room.get_participants.4.name }}
+                {% endif %}
+            </h6>
         </div>
     {% endif %}
 
-    {% if users.5 %}
-        <div class="avatar-6 col-3 m-1">                       
-            <img class="card-img-top" src="{{ users.5.avatar.url }}" alt="User avatar">                      
-            <h6 align="center" class="user-name">{{ users.5.username }}</h6>
+    {% if room.get_participants.5 %}
+        <div class="user-avatar avatar-6 col-3 m-1">                       
+            <img class="card-img-top" src="{{ room.get_participants.5.avatar.url }}" alt="User avatar">                      
+            <h6 align="center" class="user-name">
+                {% if room.get_participants.5.username %}
+                    {{ room.get_participants.5.username }}
+                {% else %}
+                    {{ room.get_participants.5.name }}
+                {% endif %}
+            </h6>
         </div>
     {% endif %}
     

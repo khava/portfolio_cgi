@@ -6,16 +6,16 @@
             <div id="accordion"  class="accordion">
                 <div class="card">
                   <a class="theme-header collapsed btn-dark" data-toggle="collapse" data-target="#collapseTheme" aria-expanded="true" aria-controls="collapseTheme">
-                    {{ theme.theme }}
+                    {{ room.theme.theme }}
                   </a>
                   
                   <div id="collapseTheme" class="collapse" aria-labelledby="headingTheme" data-parent="#accordion">
                     <div class="card-body">
                         <strong>Проблема: </strong>
-                        {{ theme.problem }}
+                        {{ room.theme.problem }}
                         <br>
                         <strong>Решение: </strong>
-                        {{ theme.decision }}
+                        {{ room.theme.decision }}
                     </div>
                   </div>
                 </div>
@@ -27,7 +27,7 @@
 
                         {% if request.user.is_authenticated %}
                             {% if request.user != theme.author %}
-                                {% for comment in comments %}
+                                {% for comment in room.comments.all %}
                                     {% if comment.author == user %}
                                         <li>
                                             <div class="chat-body">
@@ -63,4 +63,12 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="row mt-3 mb-3">
+                <div class="btn btn-dark p-0 m-0 ml-4 mr-2 col-5" id="start-discussion">Начать обсуждение</div>
+                <div class="btn btn-dark p-0 m-0 col-5" id="add-bots">Добавить ботов</div>
+            </div>
+            <div class="row">
+                <div class="btn btn-dark p-0 m-0 ml-4 mb-3 col-10" id="leave-room">Покинуть комнату</div>
+            </div>            
         </div>

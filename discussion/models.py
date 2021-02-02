@@ -1,3 +1,5 @@
+from itertools import chain
+
 from django.db import models
 from django.conf import settings
 
@@ -63,6 +65,7 @@ class Room(models.Model):
 
     name = models.CharField(max_length=255, unique=True, verbose_name='name')
     created_date = models.DateTimeField(auto_now_add=True, verbose_name='created date')
+    started = models.BooleanField(default=False, verbose_name='started')
     closed = models.BooleanField(default=False, verbose_name='closed')
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, verbose_name='theme', related_name='rooms')
     users = models.ManyToManyField(User, through='RoomUser', related_name='rooms')
@@ -76,6 +79,12 @@ class Room(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_participants(self):
+        return list(chain(self.users.order_by('roomuser__created_date'), self.bots.all()))
+
+    def get_participants_count(self):
+        return self.users.order_by('roomuser__5created_date').count() + self.bots.count()  
 
 
 class RoomUser(models.Model):

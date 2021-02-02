@@ -5,12 +5,12 @@ from discussion.models import BotComment, Bot, Comment, Room, RoomUser, RoomBot,
 
 @admin.register(Theme)
 class ThemeAdmin(admin.ModelAdmin):
-    list_display = ('theme', 'created_date', 'author',)
+    list_display = ('theme', 'created_date', 'author', )
 
 
 @admin.register(Room)
 class RoomAdmin(admin.ModelAdmin):
-    list_display = ('name', 'theme', 'created_date', 'closed')
+    list_display = ('name', 'theme', 'created_date', 'started', 'closed', )
 
 
 @admin.register(Comment)
@@ -31,7 +31,6 @@ class RoomUserAdmin(admin.ModelAdmin):
 @admin.register(Bot)
 class BotAdmin(admin.ModelAdmin):
     list_display = ('name', )
-
 
 
 @admin.register(BotComment)
