@@ -1,13 +1,17 @@
+.chat-card-outter {
+    height: 410px;
+}
+
 .chat
 {
-    width: 320px;
+    width: 410px;
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
 .accordion {
-    width: 380px;
+    width: 470px;
 }
 
 .chat li

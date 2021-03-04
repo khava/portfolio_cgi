@@ -10,7 +10,7 @@ from discussion.models import Bot, BotComment, RoomBot
 
 
 MAX_NUMBER_PARTICIPANTS = 6
-ONE_PARTICIPANTS_TIME = 60.0
+ONE_PARTICIPANTS_TIME = 300.0
 COLORS = 'blue, white, red, black, yellow, green'
 COLOR_DESCRIPTION = 'Управление, Информация и факты, Эмоции и Чувства, Критическое суждение, Оптимистичность, Креативность'
 

@@ -28,7 +28,7 @@
     const discussionSocket = new WebSocket(wsScheme + '://' + window.location.host + '/ws/discussion/' + roomID + '/');
     
     const maxNumberParticipants = 6;
-    const discussionTimeOneUser = 60000;
+    const discussionTimeOneUser = 300000;
     let botCommentGetTimeIntervalId;
 
     discussionSocket.onmessage = function(e) {
@@ -245,12 +245,12 @@
 
     function getBotComment(bot) {
         let botName;
-        let timeGetBotComment = Math.floor(Math.random() * (180000 - 10000)) + 10000; // от 10 секунд до 3 минут
+        let timeGetBotComment = Math.floor(Math.random() * (180000 - 60000)) + 60000; // 1-3 мин.
         
         botCommentGetTimeIntervalId = setInterval(() => {
 
             let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
-            timeGetBotComment = Math.floor(Math.random() * (180000 - 10000)) + 10000;
+            timeGetBotComment = Math.floor(Math.random() * (180000 - 60000)) + 60000;
 
             if (bot === 'bot_1' || bot === 'bot_2') {
                 botName = bot;
