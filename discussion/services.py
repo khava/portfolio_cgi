@@ -115,13 +115,14 @@ def permutation_color(room):
 
 	colors_list = room.colors.split(', ')
 	color_description_list = room.color_description.split(', ')
-	print(f'### IN Permutation color - {colors_list} ###')
+	print(f'### IN Permutation color - {colors_list}, {room.name} ###')
 	send_colors(room.name, colors_list, color_description_list)
 
 	if colors_list[-1] == 'blue':
+		room.closed = True
 		room.colors = COLORS
 		room.color_description = COLOR_DESCRIPTION
-		room.save(update_fields=['colors', 'color_description'])
+		room.save(update_fields=['closed', 'colors', 'color_description'])
 
 
 def change_color(room):
@@ -131,7 +132,7 @@ def change_color(room):
 	if room_users.count() == MAX_NUMBER_PARTICIPANTS or room_users.count() + room_bots.count() == MAX_NUMBER_PARTICIPANTS:		
 		colors_list = room.colors.split(', ')
 		color_description_list = room.color_description.split(', ')
-		print(f'### OUT Permutation color - {colors_list} ###')
+		print(f'### OUT Permutation color - {colors_list}, {room.name} ###')
 		send_colors(room.name, colors_list, color_description_list)
  
 		color_permutation_times = 6 - (colors_list.index('blue') + 1)

@@ -37,7 +37,7 @@
               <div class="card-body">
               {% if request.user.is_staff %}
                {% for room in theme.rooms.all %}
-                  <a href="{% url 'user_comments' discussion_id=room.pk %}">Обсужедение {{ room.pk }}, дата: {{ room.created_date }}</a> <br>
+                  <a href="{% url 'user_comments' discussion_id=room.pk %}">Обсуждение {{ room.pk }}, дата: {{ room.created_date }}</a> <br>
                {% endfor %}
               {% endif %}
               </div>

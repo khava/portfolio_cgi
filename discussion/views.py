@@ -57,7 +57,7 @@ class DiscussionRoomView(View):
             'room': room,
         }
 
-        return render(request, 'discussion/discussion_room.html', context)
+        return render(request, 'discussion/discussion.html', context)
 
 
 class CreateDiscussionRoomView(View):

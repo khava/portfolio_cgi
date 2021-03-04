@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    {% if room.closed %} 
+        <div class="info-about-room">
+            <p>Данное обсуждение завершено, присоединитесь к другому или создайте свое</p>
+        </div>
+    {% else %}
+        {% include 'discussion/discussion_room.html' %}
+    {% endif %}
+
+{% endblock %}

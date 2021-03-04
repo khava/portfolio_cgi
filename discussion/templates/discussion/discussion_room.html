@@ -1,12 +1,13 @@
-{% extends 'base.html' %}
-
 {% load staticfiles %}
 
-{% block content %}
-
 <div class="container">
+    {% include 'discussion/popup_window.html' %}
+
     <div class="row" style="flex-wrap: wrap;">
         <div class="col-7">
+            
+            {% include 'discussion/color_discription.html' %}
+
             <div class="row room-users">
                 <img src ="{% static 'image/table.png' %}">
                 {% include 'discussion/users_avatars.html' %}
@@ -150,7 +151,7 @@
         let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
         let colorsList = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
 
-        if (roomIsStarted === false &&  colorsList.indexOf(roomParticipants[0].style.borderColor) === -1) {
+        if (roomIsStarted === false && colorsList.indexOf(roomParticipants[0].style.borderColor) === -1) {
                 discussionSocket.send(JSON.stringify({
                 'isUserLeaveRoom': true,
             }));
@@ -163,18 +164,23 @@
 
     document.querySelector("#start-discussion").onclick = function(e) {
         let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
+        let colorsList = ['blue', 'white', 'red', 'black', 'yellow', 'green'];
 
-        if (roomIsStarted === false) {
-            if (roomParticipants.length === maxNumberParticipants) {
-            discussionSocket.send(JSON.stringify({
-                'isDiscussionStart': true,
-            }));
+        if (colorsList.indexOf(roomParticipants[0].style.borderColor) === -1) {
+            if (roomIsStarted === false) {
+                if (roomParticipants.length === maxNumberParticipants) {
+                discussionSocket.send(JSON.stringify({
+                    'isDiscussionStart': true,
+                }));
+            } else {
+                    alert('Недостаточно участников!');
+                }
+            } else {
+                alert('Обсуждение начато!');
+            }   
         } else {
-                alert('Недостаточно участников!');
-            }
-        } else {
-            alert('Обсуждение начато!');
-        }   
+                alert('Обсуждение начато!');
+            } 
     }
 
     document.querySelector("#add-bots").onclick = function(e) {
@@ -193,6 +199,16 @@
     function changeColor(colors, colorDescription) {
         let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
 
+        if (roomParticipants[0].style.border !== `10px solid ${colors[0]}`) {
+            if (colors[0] === 'blue') {
+                document.querySelector('.popup-window .popup-content .popup-body p').innerText = 'Начало обсуждения'
+            } else {
+                document.querySelector('.popup-window .popup-content .popup-body p').innerText = 'Смена цвета'
+            }
+            $('.popup-window').fadeIn(1500);
+            $('.popup-window').fadeOut(1500);
+        }
+       
         for (let i = 0; i < maxNumberParticipants; i++) {
             roomParticipants[i].style.border = `10px solid ${colors[i]}`;
             roomParticipants[i].style.background = colors[i];
@@ -285,4 +301,3 @@
     // };
 
 </script>
-{% endblock %}

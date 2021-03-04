@@ -16,21 +16,27 @@
                     </div>
                     <div class="block-button text-center col-2" style="padding:0px 5px;">
                         
-                        <a class="theme_discussion btn btn-primary btn-lg col-12" href="#collapse{{ theme }}" data-toggle="collapse" 
-                            role="button" aria-expanded="false" aria-controls="collapse{{ theme }}"><small>Обсуждение</small></a>
+                        <a class="theme_discussion btn btn-primary btn-lg col-12" href="#collapse{{ theme.pk }}" data-toggle="collapse" 
+                            role="button" aria-expanded="false" aria-controls="collapse{{ theme.pk }}"><small>Обсуждение</small></a>
                         
                         {% if request.user.is_authenticated %}
                             {% if theme.author != request.user %}
-                                <div class="collapse" id="collapse{{ theme }}">
+                                <div class="collapse" id="collapse{{ theme.pk }}">
                                     <div class="card card-body p-1 m-1">
                                         {% for room in theme.rooms.all %}
                                             {% if not room.closed %}
                                             
                                                 {% if room.get_participants_count == 6 %}
-                                                    <a onclick="return checkUserIsExistsInRoom('{{ room.get_participants }}')" 
-                                                        href="{% url 'discussion' room_id=room.pk %}">{{ room.name }}</a> - {{ room.get_participants_count }}/6</br>
+                                                    <span id="{{ room.name }}">
+                                                        <a class="participants-{{ room.name }}" onclick="return checkUserIsExistsInRoom('{{ room.get_participants }}')" 
+                                                            href="{% url 'discussion' room_id=room.pk %}">{{ room.name }}</a>
+                                                        <span class="participants-{{ room.name }}-count"> - {{ room.get_participants_count }}/6</span>
+                                                    </span>
                                                 {% else %}
-                                                    <a href="{% url 'discussion' room_id=room.pk %}">{{ room.name }}</a> - {{ room.get_participants_count }}/6</br>
+                                                    <span id="{{ room.name }}">
+                                                        <a class="participants-{{ room.name }}" href="{% url 'discussion' room_id=room.pk %}">{{ room.name }}</a>
+                                                        <span class="participants-{{ room.name }}-count"> - {{ room.get_participants_count }}/6</span>
+                                                    </span>
                                                 {% endif %}
 
                                             {% endif %}
@@ -40,16 +46,16 @@
                                     </div>
                                 </div>
                             {% else %}
-                                <div class="collapse" id="collapse{{ theme }}">
+                                <div class="collapse" id="collapse{{ theme.pk }}">
                                     <div class="card card-body">
                                         <p>Автор темы не может участвовать в обсуждении</p>
                                     </div>
                                 </div>
                             {% endif %}
                         {% else %}
-                            <div class="collapse" id="collapse{{ theme }}">
+                            <div class="collapse" id="collapse{{ theme.pk }}">
                                 <div class="card card-body">
-                                    <p>Чтобы увидеть сroomIDущ-ие комнаты и создать новую авторизируйтесь</p>
+                                    <p>Чтобы увидеть сущ-ие комнаты и создать новую авторизируйтесь</p>
                                 </div>
                             </div>
                         {% endif %}
@@ -69,12 +75,66 @@
 
 <script>
 
+    const navigation = performance.getEntriesByType("navigation");
+
+    if (navigation[0].type === "navigate" || navigation[0].type === "back_forward") {
+        location.reload(true);
+    }
+    
     const wsScheme = window.location.protocol == "https:" ? "wss" : "ws";
     const numPartisipantsSocket = new WebSocket(wsScheme + '://' + window.location.host + '/ws/room_num_participants/');
 
     numPartisipantsSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
-        console.log(data)
+        const rooms_participants = (data['rooms_participants'])
+
+        for (room_participant of rooms_participants) {
+            let themeID = room_participant[0];
+            let roomID = room_participant[1];
+            let roomName = room_participant[2];
+            let participantCount = room_participant[3];
+            let participantList = room_participant[4];
+
+            try {
+                if (participantCount == 6) {
+                    document.querySelector(`#collapse${themeID} .participants-${roomName}`).setAttribute('onclick', `return checkUserIsExistsInRoom("${participantList}")`);
+                    document.querySelector(`#collapse${themeID} .participants-${roomName}-count`).innerHTML = ` - ${participantCount}/6`;
+                } else {
+                    document.querySelector(`#collapse${themeID} .participants-${roomName}`).removeAttribute("onclick");
+                    document.querySelector(`#collapse${themeID} .participants-${roomName}-count`).innerHTML = ` - ${participantCount}/6`;
+                }
+
+                if (participantCount == 0) {
+                    document.querySelector(`#collapse${themeID} .card #${roomName}`).remove();
+                }
+
+            } catch (e) {
+                let parrent = document.querySelector(`#collapse${themeID} .card`);
+                let createRoomButton = document.querySelector(`#collapse${themeID} .card .btn`);
+
+                let outerSpan = document.createElement('span');
+                let innerA = document.createElement('a');
+                let innerSpan = document.createElement('span');
+
+                outerSpan.id = roomName;
+                
+                innerA.className = `participants-${roomName}`;
+                innerA.href = `/discussion/${roomID}`;
+                innerA.innerText = roomName;
+
+                if (participantCount == 6){
+                    innerA.setAttribute('onclick', `return checkUserIsExistsInRoom("${participantList}")`);
+                }
+
+                innerSpan.className = `participants-${roomName}-count`;
+                innerSpan.innerText = ` - ${participantCount}/6`;
+
+                outerSpan.appendChild(innerA);
+                outerSpan.appendChild(innerSpan);
+
+                parrent.insertBefore(outerSpan, createRoomButton);
+            }
+        }
     }
 
     numPartisipantsSocket.onclose = function(e) {
@@ -86,7 +146,7 @@
 
         let currentUser = '{{ request.user }}';
         let room_participants_list = participants.replace(/: |<|>|,|User|Bot/g, '').replace('[', '').replace(']', '').split(' ');
-        
+
         if (!room_participants_list.includes(currentUser)) {
             alert('Вы не можете присоединиться к обсуждение, в комнате нет свободного места для Вас.');
             return false;

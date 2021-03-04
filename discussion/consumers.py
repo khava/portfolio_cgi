@@ -69,7 +69,7 @@ class DiscussionConsumer(WebsocketConsumer):
             change_color(self.room)
 
         if message: 
-            if color_value:
+            if color_value and len(message) >= 10:
                 Comment.objects.create(comment=message, color=color_value, theme=self.theme, author=self.user, room=self.room)
 
             async_to_sync(self.channel_layer.group_send)(
@@ -158,7 +158,7 @@ class NumberParticipantsRoomDisplayConsumer(WebsocketConsumer):
             self.channel_name
         )
 
-    def send_num_participants(self, event):
+    def send_rooms_participats(self, event):
         self.send(text_data=json.dumps({
-            'num_participants': event['num_participants'],
+            'rooms_participants': event['rooms_participants'],
         }))

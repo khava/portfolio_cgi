@@ -5,7 +5,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
 from accounts.models import User
-from discussion.models import Room, RoomUser, RoomBot, Bot
+from discussion.models import Room, RoomUser, RoomBot, Bot, User
 
 
 @receiver([post_save, post_delete], sender=RoomUser)
@@ -33,14 +33,27 @@ def room_users(sender, instance, **kwargs):
 @receiver([post_save, post_delete], sender=RoomBot)
 def num_participants(sender, instance, **kwargs):
 
-	room = Room.objects.get(name=instance.room)
 	room_name = 'number_participants'	
 	channel_layer = get_channel_layer()
+
+	rooms = []
+
+	for room in Room.objects.all():
+		if not room.closed:
+			participants = [participant.username for participant in room.get_participants() if isinstance(participant, User)]
+
+			rooms.append([
+				room.theme.pk,
+				room.pk,
+				room.name,
+				room.get_participants_count(),
+				', '.join(participants),
+			])
 
 	async_to_sync(channel_layer.group_send)(
 		room_name,
 		{
-			'type': 'send_num_participants',
-			'num_participants': room.get_participants_count(),
+			'type': 'send_rooms_participats',
+			'rooms_participants': rooms
 		}
 	)
