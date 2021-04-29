@@ -43,17 +43,18 @@
 
         if (!!message && !!receiveUser) {
             if (receiveUser === user) {
-                $('<li><div class="chat-body"><p class="text-right"><strong>' + 
-                    user + '</strong></p><p class="text-right">' + message + 
+                let color = getColor(receiveUser);
+                $('<li><div class="chat-body"><p class="text-right"><strong style="color:' + color + ';">' + 
+                    receiveUser + '</strong></p><p class="text-right">' + message + 
                         '</p></div></li>').appendTo($('.chat'))
             } else {
-                $('<li><div class="chat-body"><p class="text-left"><strong>' + 
+                $('<li><div class="chat-body"><p class="text-left"><strong style="color:' + color + ';">' + 
                     receiveUser + '</strong></p><p class="text-left">' + message + 
                         '</p></div></li>').appendTo($('.chat'))
             };
         }
         
-        $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
+        // $('#all_messages').scrollTop($('#all_messages')[0].scrollHeight);
   
         if (data['room_users']) {
             const newRoomUsers = JSON.parse(data['room_users'])
@@ -100,8 +101,10 @@
         }      
 
         if (data['bot_name']) {
+
+            let color = getColor(botName);
             
-            $('<li><div class="chat-body"><p class="text-left"><strong>' + 
+            $('<li><div class="chat-body"><p class="text-left"><strong style="color:' + color + ';">' + 
                 botName + '</strong></p><p class="text-left">' + botComment + 
                     '</p></div></li>').appendTo($('.chat'))
             
@@ -121,6 +124,16 @@
             document.querySelector('#chat-message-submit').click();
         }
     };
+
+    const getColor = (name) => {
+        let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
+        for (participant of roomParticipants) {
+            if (name === participant.innerText && participant.style.borderColor) {
+                let color = participant.style.borderColor;
+                return color;
+            }
+        }
+    }
 
     document.querySelector('#chat-message-submit').onclick = function (e) {
         const messageInput = document.querySelector('#chat-message-input');
@@ -195,18 +208,37 @@
         }
     }
 
+    document.querySelector("#delete-bots").onclick = function(e) {
+        let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
+
+        if (roomIsStarted === false) {
+
+            if ((roomParticipants[4].innerText === 'bot_1' && roomParticipants[5].innerText === 'bot_2') 
+                || (roomParticipants[4].innerText === 'bot_2') || (roomParticipants[5].innerText === 'bot_1')) {
+                discussionSocket.send(JSON.stringify({
+                    'isDeleteBot': true
+                }));
+            } else {
+                alert('В комнате нет ботов.');
+            }
+        } else {
+            alert('Обсуждение начато, невозможно удалить бота.');
+        }
+    }
+
 
     function changeColor(colors, colorDescription) {
         let roomParticipants = document.querySelectorAll(".room-users .user-avatar");
+        let namesInChatWindow = document.querySelectorAll("#all_messages .chat li")
 
         if (roomParticipants[0].style.border !== `10px solid ${colors[0]}`) {
             if (colors[0] === 'blue') {
                 document.querySelector('.popup-window .popup-content .popup-body p').innerText = 'Начало обсуждения'
             } else {
-                document.querySelector('.popup-window .popup-content .popup-body p').innerText = 'Смена цвета'
+                document.querySelector('.popup-window .popup-content .popup-body p').innerText = 'Получение цвета'
             }
-            $('.popup-window').fadeIn(1500);
-            $('.popup-window').fadeOut(1500);
+            $('.popup-window').fadeIn(1200);
+            $('.popup-window').fadeOut(1200);
         }
        
         for (let i = 0; i < maxNumberParticipants; i++) {
@@ -214,6 +246,15 @@
             roomParticipants[i].style.background = colors[i];
             roomParticipants[i].setAttribute('data-original-title', colorDescription[i]);
         }
+
+        // for (let item of namesInChatWindow) {
+        //     let name = item.querySelector('p').innerText;
+        //     for (let j in roomParticipants) {
+        //         if (name === roomParticipants[j].innerText) {
+        //             item.querySelector('p strong').style.color = roomParticipants[j].style.background;
+        //         }
+        //     }
+        // }
 
         if (roomParticipants.length < maxNumberParticipants) {
             clearInterval(botCommentGetTimeIntervalId);
@@ -238,7 +279,7 @@
                 discussionSocket.onclose();
                 alert('Обсуждение завершено!');
                 window.location.replace(`${window.location.protocol}//${window.location.host}`);
-            }, discussionTimeOneUser);
+            }, discussionTimeOneUser + 15000);
         }
     };
 

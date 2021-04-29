@@ -57,6 +57,7 @@ class DiscussionConsumer(WebsocketConsumer):
         is_user_leave_room = text_data_json.get('isUserLeaveRoom')
         is_discussion_start = text_data_json.get('isDiscussionStart')
         is_bots_add = text_data_json.get('isBotsAdd')
+        is_delete_bot = text_data_json.get('isDeleteBot')
         is_get_bot_comment = text_data_json.get('isGetBotComment')
         is_closed = text_data_json.get('closed')
 
@@ -83,6 +84,16 @@ class DiscussionConsumer(WebsocketConsumer):
         
         if is_bots_add:
             add_bots(self.room)
+
+        if is_delete_bot:
+            if self.room.bots.count() == 2:
+                bot = Bot.objects.get(name='bot_1')
+                self.room.bots.remove(bot)
+            elif self.room.bots.count() == 1:
+                bot = Bot.objects.get(name='bot_2')
+                self.room.bots.remove(bot)
+            else:
+                pass
 
         if is_get_bot_comment:
             bot_name = text_data_json.get('botName')

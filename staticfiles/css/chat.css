@@ -62,3 +62,13 @@
     margin: 15% auto;
 
 }
+
+.user-avatar .card-img-top {
+    height: 90px;
+    width: 90px;
+}
+
+.chat-body strong {
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: black;
+}

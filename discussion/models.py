@@ -66,6 +66,7 @@ class Room(models.Model):
     name = models.CharField(max_length=255, unique=True, verbose_name='name')
     created_date = models.DateTimeField(auto_now_add=True, verbose_name='created date')
     started = models.BooleanField(default=False, verbose_name='started')
+    # started_time = models.DateTimeField(blank=True, null=True)
     closed = models.BooleanField(default=False, verbose_name='closed')
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, verbose_name='theme', related_name='rooms')
     users = models.ManyToManyField(User, through='RoomUser', related_name='rooms')

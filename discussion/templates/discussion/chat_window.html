@@ -31,14 +31,14 @@
                                     {% if comment.author == user %}
                                         <li>
                                             <div class="chat-body">
-                                                <p class="text-right"><strong>{{ comment.author }}</strong></p>
+                                                <p class="text-right"><strong style="color: {{ comment.color }};">{{ comment.author }}</strong></p>
                                                 <p class="text-right">{{ comment.comment }}</p>
                                             </div>
                                         </li>
                                     {% else %}
                                         <li>
                                             <div class="chat-body">
-                                                <p class="text-left"><strong>{{ comment.author }}</strong></p>
+                                                <p class="text-left"><strong style="color: {{ comment.color }};">{{ comment.author }}</strong></p>
                                                 <p class="text-left">{{ comment.comment }}</p>
                                             </div>
                                         </li>
@@ -68,7 +68,8 @@
                 <div class="btn btn-dark p-0 m-0 ml-4 mr-2 col-5" id="start-discussion">Начать обсуждение</div>
                 <div class="btn btn-dark p-0 m-0 col-5" id="add-bots">Добавить ботов</div>
             </div>
-            <div class="row">
-                <div class="btn btn-dark p-0 m-0 ml-4 mb-3 col-10" id="leave-room">Покинуть комнату</div>
+            <div class="row mt-3 mb-3">
+                <div class="btn btn-dark p-0 m-0 ml-4 mr-2 col-5" id="leave-room">Покинуть комнату</div>
+                <div class="btn btn-dark p-0 m-0 col-5" id="delete-bots">Удалить бота</div>
             </div>            
         </div>
